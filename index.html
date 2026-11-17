@@ -1,1 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Arcade</title>
 
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #080b14;
+    color: white;
+    min-height: 100vh;
+}
+
+header {
+    height: 70px;
+    background: #111625;
+    border-bottom: 1px solid #252d43;
+    display: flex;
+    align-items: center;
+    padding: 0 25px;
+    gap: 20px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #6c7cff;
+}
+
+nav {
+    display: flex;
+    gap: 8px;
+}
+
+nav button {
+    background: transparent;
+    border: 0;
+    color: #9da6bd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+nav button:hover,
+nav button.active {
+    background: #20283e;
+    color: white;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.upload {
+    background: #6475ff;
+    border: 0;
+    color: white;
+    padding: 11px 17px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.upload:hover {
+    background: #7887ff;
+}
+
+main {
+    max-width: 1200px;
+    margin: auto;
+    padding: 35px 25px;
+}
+
+.hero {
+    background: linear-gradient(135deg, #151c35, #101526);
+    border: 1px solid #252e48;
+    border-radius: 18px;
+    padding: 40px;
+    margin-bottom: 30px;
+}
+
+.hero h1 {
+    margin: 0 0 10px;
+    font-size: 38px;
+}
+
+.hero p {
+    color: #9fa9c0;
+    margin: 0 0 25px;
+}
+
+.bigUpload {
+    display: inline-block;
+    background: #6475ff;
+    padding: 13px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.sectionTitle h2 {
+    margin: 0;
+}
+
+#games {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+.empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    border: 1px dashed #303a56;
+    border-radius: 15px;
+    color: #7f8aa5;
+}
+
+.game {
+    background: #111625;
+    border: 1px solid #252d43;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: .2s;
+}
+
+.game:hover {
+    transform: translateY(-3px);
+    border-color: #5265d9;
+}
+
+.gameImage {
+    height: 135px;
+    background: linear-gradient(135deg, #252d52, #171d32);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 45px;
+}
+
+.gameInfo {
+    padding: 15px;
+}
+
+.gameInfo h3 {
+    margin: 0 0 6px;
+}
+
+.gameInfo p {
+    color: #7f8aa5;
+    font-size: 13px;
+    margin: 0 0 15px;
+}
+
+.play {
+    width: 100%;
+    background: #6475ff;
+    color: white;
+    border: 0;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.play:hover {
+    background: #7887ff;
+}
+
+/* PLAYER */
+
+#player {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #05070d;
+    z-index: 100;
+}
+
+.playerBar {
+    height: 60px;
+    background: #111625;
+    border-bottom: 1px solid #252d43;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    gap: 12px;
+}
+
+.playerBar strong {
+    font-size: 16px;
+}
+
+.playerButton {
+    background: #20283e;
+    color: white;
+    border: 0;
+    padding: 9px 13px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.playerButton:hover {
+    background: #303b5b;
+}
+
+#gameFrame {
+    width: 100%;
+    height: calc(100vh - 60px);
+    border: 0;
+    background: white;
+}
+
+@media(max-width:700px) {
+    header {
+        padding: 0 12px;
+    }
+
+    nav {
+        display: none;
+    }
+
+    main {
+        padding: 20px 12px;
+    }
+
+    .hero {
+        padding: 25px;
+    }
+
+    .hero h1 {
+        font-size: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo">
+        HTML <span>Arcade</span>
+    </div>
+
+    <nav>
+        <button class="active">Home</button>
+        <button onclick="showLibrary()">My Games</button>
+    </nav>
+
+    <div class="spacer"></div>
+
+    <label class="upload">
+        + Upload Game
+        <input type="file" id="fileInput" accept=".html,.htm">
+    </label>
+
+</header>
+
+<main>
+
+    <section class="hero">
+
+        <h1>Play HTML Games 🎮</h1>
+
+        <p>
+            Upload an HTML game and play it directly in your browser.
+        </p>
+
+        <label class="bigUpload">
+            Upload HTML Game
+            <input type="file" id="heroFile" accept=".html,.htm">
+        </label>
+
+    </section>
+
+    <div class="sectionTitle">
+        <h2>My Games</h2>
+    </div>
+
+    <section id="games">
+
+        <div class="empty" id="empty">
+            <div style="font-size:40px;">🎮</div>
+            <h3>No games yet</h3>
+            <p>Upload an HTML file to add your first game.</p>
+        </div>
+
+    </section>
+
+</main>
+
+<!-- GAME PLAYER -->
+
+<div id="player">
+
+    <div class="playerBar">
+
+        <button class="playerButton" onclick="closeGame()">
+            ← Back
+        </button>
+
+        <strong id="gameTitle">
+            Game
+        </strong>
+
+        <div class="spacer"></div>
+
+        <button class="playerButton" onclick="fullscreenGame()">
+            ⛶ Fullscreen
+        </button>
+
+    </div>
+
+    <iframe
+        id="gameFrame"
+        sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock">
+    </iframe>
+
+</div>
+
+<script>
+
+let games = [];
+
+const fileInput = document.getElementById("fileInput");
+const heroFile = document.getElementById("heroFile");
+const gamesContainer = document.getElementById("games");
+const empty = document.getElementById("empty");
+
+fileInput.addEventListener("change", function() {
+    handleFile(this.files[0]);
+});
+
+heroFile.addEventListener("change", function() {
+    handleFile(this.files[0]);
+});
+
+function handleFile(file) {
+
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".html") &&
+        !file.name.toLowerCase().endsWith(".htm")) {
+
+        alert("Please upload an HTML file.");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+
+        const game = {
+            name: file.name.replace(/\.(html|htm)$/i, ""),
+            code: e.target.result
+        };
+
+        games.push(game);
+
+        saveGames();
+        renderGames();
+
+        openGame(game);
+
+    };
+
+    reader.readAsText(file);
+}
+
+function renderGames() {
+
+    gamesContainer.innerHTML = "";
+
+    if (games.length === 0) {
+
+        gamesContainer.appendChild(empty);
+        empty.style.display = "block";
+
+        return;
+    }
+
+    games.forEach((game, index) => {
+
+        const card = document.createElement("div");
+
+        card.className = "game";
+
+        card.innerHTML = `
+
+            <div class="gameImage">
+                🎮
+            </div>
+
+            <div class="gameInfo">
+
+                <h3>${escapeHTML(game.name)}</h3>
+
+                <p>HTML Game</p>
+
+                <button class="play">
+                    ▶ Play
+                </button>
+
+            </div>
+
+        `;
+
+        card.querySelector(".play").onclick = function() {
+            openGame(game);
+        };
+
+        gamesContainer.appendChild(card);
+
+    });
+
+}
+
+function openGame(game) {
+
+    const player = document.getElementById("player");
+    const frame = document.getElementById("gameFrame");
+    const title = document.getElementById("gameTitle");
+
+    title.textContent = game.name;
+
+    frame.srcdoc = game.code;
+
+    player.style.display = "block";
+
+}
+
+function closeGame() {
+
+    const player = document.getElementById("player");
+    const frame = document.getElementById("gameFrame");
+
+    frame.srcdoc = "";
+
+    player.style.display = "none";
+
+}
+
+function fullscreenGame() {
+
+    const frame = document.getElementById("gameFrame");
+
+    if (frame.requestFullscreen) {
+        frame.requestFullscreen();
+    }
+
+}
+
+function saveGames() {
+
+    try {
+        localStorage.setItem(
+            "htmlArcadeGames",
+            JSON.stringify(games)
+        );
+    } catch(e) {
+
+        console.log("Could not save games.");
+
+    }
+
+}
+
+function loadGames() {
+
+    try {
+
+        const saved =
+            localStorage.getItem("htmlArcadeGames");
+
+        if (saved) {
+            games = JSON.parse(saved);
+        }
+
+    } catch(e) {
+
+        games = [];
+
+    }
+
+    renderGames();
+
+}
+
+function showLibrary() {
+
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
+
+}
+
+function escapeHTML(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
+
+loadGames();
+
+</script>
+
+</body>
+</html>
