@@ -2,556 +2,553 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HTML Arcade</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-*{
-    box-sizing:border-box;
+* {
+    box-sizing: border-box;
 }
 
-html,body{
-    margin:0;
-    padding:0;
-    min-height:100%;
-    background:#070a12;
-    color:#fff;
-    font-family:Inter,Arial,Helvetica,sans-serif;
-}
-
-body{
-    overflow-x:hidden;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0f17;
+    color: white;
 }
 
 button,
-input{
-    font:inherit;
+input,
+select {
+    font: inherit;
 }
 
-button{
-    cursor:pointer;
+button {
+    cursor: pointer;
 }
 
-.hidden{
-    display:none!important;
+.hidden {
+    display: none !important;
 }
 
-/* ================= HEADER ================= */
+/* AUTH */
 
-header{
-    height:68px;
-    display:flex;
-    align-items:center;
-    gap:18px;
-    padding:0 22px;
-    background:#101522;
-    border-bottom:1px solid #252d42;
-    position:sticky;
-    top:0;
-    z-index:50;
+#authPage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
-.logo{
-    font-size:23px;
-    font-weight:800;
-    white-space:nowrap;
+.authBox {
+    width: min(430px, 100%);
+    background: #151b27;
+    border: 1px solid #293244;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
 }
 
-.logo span{
-    color:#7282ff;
+.logo {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 6px;
 }
 
-.nav{
-    display:flex;
-    gap:5px;
+.subtitle {
+    color: #9da8ba;
+    margin-bottom: 25px;
 }
 
-.nav button{
-    border:0;
-    background:transparent;
-    color:#929cb5;
-    padding:9px 13px;
-    border-radius:8px;
+input,
+select {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 7px 0;
+    border: 1px solid #303a4d;
+    border-radius: 10px;
+    background: #0e131d;
+    color: white;
+    outline: none;
 }
 
-.nav button:hover,
-.nav button.active{
-    background:#202940;
-    color:#fff;
+input:focus,
+select:focus {
+    border-color: #6c7cff;
 }
 
-.spacer{
-    flex:1;
+.primaryBtn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: 0;
+    border-radius: 10px;
+    background: #6573ff;
+    color: white;
+    font-weight: bold;
 }
 
-.uploadButton{
-    background:#6577ff;
-    color:#fff;
-    border:0;
-    padding:10px 16px;
-    border-radius:9px;
-    font-weight:700;
+.secondaryBtn {
+    padding: 10px 14px;
+    border: 1px solid #303a4d;
+    border-radius: 9px;
+    background: #171e2b;
+    color: white;
 }
 
-.uploadButton:hover{
-    background:#7788ff;
+.dangerBtn {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #d64c5c;
+    color: white;
 }
 
-/* ================= MAIN ================= */
-
-main{
-    width:min(1200px,100%);
-    margin:auto;
-    padding:32px 22px 70px;
+.smallText {
+    color: #8e99aa;
+    font-size: 13px;
 }
 
-.hero{
-    padding:42px;
-    border:1px solid #29334d;
-    border-radius:20px;
-    background:
-        radial-gradient(
-            circle at 80% 20%,
-            #26366d 0,
-            transparent 35%
-        ),
-        linear-gradient(
-            135deg,
-            #151c31,
-            #0d1220
-        );
-    margin-bottom:30px;
+.error {
+    color: #ff7373;
+    margin-top: 10px;
 }
 
-.hero h1{
-    font-size:40px;
-    margin:0 0 10px;
+.success {
+    color: #62d98b;
+    margin-top: 10px;
 }
 
-.hero p{
-    color:#a3adc3;
-    margin:0 0 24px;
-    font-size:16px;
+/* APP */
+
+#app {
+    min-height: 100vh;
 }
 
-.bigUpload{
-    display:inline-block;
-    background:#6577ff;
-    padding:12px 19px;
-    border-radius:10px;
-    font-weight:700;
-    cursor:pointer;
+header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    background: rgba(11,15,23,.95);
+    border-bottom: 1px solid #222b3a;
+    backdrop-filter: blur(10px);
 }
 
-.bigUpload:hover{
-    background:#7788ff;
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-input[type=file]{
-    display:none;
+.headerLogo {
+    font-size: 22px;
+    font-weight: 800;
 }
 
-/* ================= LIBRARY ================= */
-
-.libraryHeader{
-    display:flex;
-    align-items:center;
-    gap:15px;
-    margin-bottom:18px;
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.libraryHeader h2{
-    margin:0;
+.userBadge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    background: #151c29;
 }
 
-.search{
-    margin-left:auto;
-    background:#111827;
-    border:1px solid #2a344d;
-    color:#fff;
-    border-radius:9px;
-    padding:10px 13px;
-    width:230px;
-    outline:none;
+.roleBadge {
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #303a52;
 }
 
-.search:focus{
-    border-color:#6577ff;
+.ownerBadge {
+    background: #9b6cff;
 }
 
-#games{
-    display:grid;
-    grid-template-columns:
-        repeat(auto-fill,minmax(240px,1fr));
-    gap:18px;
+.adminBadge {
+    background: #4f80ff;
 }
 
-.empty{
-    grid-column:1/-1;
-    border:1px dashed #34405c;
-    border-radius:16px;
-    text-align:center;
-    padding:65px 20px;
-    color:#7f8aa3;
+main {
+    max-width: 1200px;
+    margin: auto;
+    padding: 25px;
 }
 
-.emptyIcon{
-    font-size:48px;
-    margin-bottom:10px;
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.game{
-    overflow:hidden;
-    border:1px solid #28324a;
-    border-radius:15px;
-    background:#101521;
-    transition:
-        transform .15s,
-        border-color .15s;
+.search {
+    flex: 1;
+    min-width: 220px;
+    margin: 0;
 }
 
-.game:hover{
-    transform:translateY(-3px);
-    border-color:#596bdf;
+.gamesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 15px;
 }
 
-.gameImage{
-    height:140px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:
-        radial-gradient(
-            circle,
-            #2d3a76,
-            #151b2e 65%
-        );
-    font-size:52px;
+.gameCard {
+    background: #151b27;
+    border: 1px solid #293244;
+    border-radius: 15px;
+    padding: 16px;
 }
 
-.gameInfo{
-    padding:15px;
+.gameTitle {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 7px;
+    word-break: break-word;
 }
 
-.gameTitle{
-    font-weight:700;
-    margin-bottom:5px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+.gameInfo {
+    color: #8995a8;
+    font-size: 13px;
+    margin-bottom: 15px;
 }
 
-.gameType{
-    color:#7e89a3;
-    font-size:13px;
-    margin-bottom:14px;
+.gameActions {
+    display: flex;
+    gap: 8px;
 }
 
-.gameButtons{
-    display:flex;
-    gap:7px;
+.gameActions button {
+    flex: 1;
 }
 
-.playButton{
-    flex:1;
-    border:0;
-    border-radius:8px;
-    padding:10px;
-    background:#6577ff;
-    color:#fff;
-    font-weight:700;
+/* ACCOUNT */
+
+.panel {
+    background: #151b27;
+    border: 1px solid #293244;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-.playButton:hover{
-    background:#7888ff;
+.panel h2 {
+    margin-top: 0;
 }
 
-.deleteButton{
-    border:0;
-    border-radius:8px;
-    padding:10px 12px;
-    color:#ff9292;
-    background:#222a3d;
+.profileRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
-.deleteButton:hover{
-    background:#39232d;
+.profileRow input {
+    flex: 1;
 }
 
-/* ================= PLAYER ================= */
-
-#player{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:1000;
-    background:#000;
+.usersTable {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.playerBar{
-    height:58px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:0 12px;
-    background:#101522;
-    border-bottom:1px solid #252d42;
+.usersTable th,
+.usersTable td {
+    text-align: left;
+    padding: 12px 8px;
+    border-bottom: 1px solid #273041;
 }
 
-.playerBar button{
-    border:0;
-    border-radius:8px;
-    padding:9px 13px;
-    color:#fff;
-    background:#202940;
+.usersTable th {
+    color: #8995a8;
+    font-size: 13px;
 }
 
-.playerBar button:hover{
-    background:#303b5a;
+/* GAME PLAYER */
+
+#playerPage {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #05070b;
+    display: flex;
+    flex-direction: column;
 }
 
-#gameTitle{
-    max-width:35vw;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
+.playerBar {
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #101621;
+    border-bottom: 1px solid #273041;
 }
 
-#gameFrame{
-    display:block;
-    width:100%;
-    height:calc(100vh - 58px);
-    border:0;
-    background:#000;
+.playerTitle {
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/*
-   Important:
-   No sandbox is used here.
-
-   This gives complex HTML games much
-   better compatibility with WebGL,
-   WebAssembly, workers, keyboard input,
-   IndexedDB, audio, etc.
-*/
-
-#gameFrame:fullscreen{
-    width:100vw;
-    height:100vh;
+.playerButtons {
+    display: flex;
+    gap: 7px;
 }
 
-/* ================= DROP ZONE ================= */
-
-#dropZone{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:2000;
-    align-items:center;
-    justify-content:center;
-    background:rgba(4,7,14,.94);
+#gameFrame {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    background: black;
 }
 
-#dropZone.active{
-    display:flex;
+.dropZone {
+    border: 2px dashed #39445a;
+    border-radius: 15px;
+    padding: 35px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #8d99ac;
 }
 
-.dropBox{
-    width:min(600px,90%);
-    text-align:center;
-    padding:65px 30px;
-    border:2px dashed #687aff;
-    border-radius:22px;
-    background:#151c31;
+.dropZone.dragging {
+    border-color: #6573ff;
+    background: #151c2a;
 }
 
-.dropBox h2{
-    margin:0 0 10px;
-    font-size:28px;
+.empty {
+    color: #818da0;
+    text-align: center;
+    padding: 50px 10px;
 }
 
-.dropBox p{
-    color:#9ba6be;
-}
-
-/* ================= TOAST ================= */
-
-#toast{
-    position:fixed;
-    bottom:25px;
-    left:50%;
-    transform:
-        translateX(-50%)
-        translateY(20px);
-    opacity:0;
-    pointer-events:none;
-    background:#202940;
-    border:1px solid #34415f;
-    color:#fff;
-    padding:11px 17px;
-    border-radius:10px;
-    z-index:5000;
-    transition:.2s;
-}
-
-#toast.show{
-    opacity:1;
-    transform:
-        translateX(-50%)
-        translateY(0);
-}
-
-/* ================= MOBILE ================= */
-
-@media(max-width:700px){
-
-    header{
-        padding:0 12px;
-        gap:10px;
+@media(max-width:700px) {
+    header {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
-    .nav{
-        display:none;
+    .headerRight {
+        width: 100%;
+        flex-wrap: wrap;
     }
 
-    .uploadButton{
-        padding:9px 11px;
+    .usersTable {
+        font-size: 13px;
     }
-
-    main{
-        padding:20px 12px 50px;
-    }
-
-    .hero{
-        padding:28px 22px;
-    }
-
-    .hero h1{
-        font-size:30px;
-    }
-
-    .libraryHeader{
-        flex-wrap:wrap;
-    }
-
-    .search{
-        width:100%;
-        margin-left:0;
-    }
-
 }
 </style>
 </head>
 
 <body>
 
+<!-- AUTH -->
+<div id="authPage">
+    <div class="authBox">
+
+        <div class="logo">🎮 HTML Arcade</div>
+        <div class="subtitle">Play your HTML games anywhere.</div>
+
+        <div id="loginForm">
+            <input id="loginEmail" type="email" placeholder="Email">
+            <input id="loginPassword" type="password" placeholder="Password">
+
+            <button class="primaryBtn" onclick="login()">
+                Sign In
+            </button>
+
+            <button class="secondaryBtn" style="width:100%;margin-top:8px"
+                    onclick="showSignup()">
+                Create Account
+            </button>
+        </div>
+
+        <div id="signupForm" class="hidden">
+            <input id="signupName" type="text" maxlength="30"
+                   placeholder="Preference / display name">
+
+            <input id="signupEmail" type="email" placeholder="Email">
+            <input id="signupPassword" type="password"
+                   placeholder="Password">
+
+            <button class="primaryBtn" onclick="signup()">
+                Create Account
+            </button>
+
+            <button class="secondaryBtn" style="width:100%;margin-top:8px"
+                    onclick="showLogin()">
+                Back to Sign In
+            </button>
+        </div>
+
+        <div id="authMessage"></div>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
 <header>
-
-    <div class="logo">
-        HTML <span>Arcade</span>
+    <div class="headerLeft">
+        <div class="headerLogo">🎮 HTML Arcade</div>
     </div>
 
-    <div class="nav">
-        <button
-            class="active"
-            id="homeButton"
-            onclick="goHome()">
-            Home
+    <div class="headerRight">
+
+        <div class="userBadge">
+            <span id="headerName">User</span>
+            <span id="headerRole" class="roleBadge">Member</span>
+        </div>
+
+        <button class="secondaryBtn" onclick="showArcade()">
+            Arcade
         </button>
 
-        <button
-            onclick="goLibrary()">
-            My Games
+        <button class="secondaryBtn" onclick="showAccount()">
+            Account
+        </button>
+
+        <button class="secondaryBtn" onclick="logout()">
+            Sign Out
         </button>
     </div>
-
-    <div class="spacer"></div>
-
-    <label class="uploadButton">
-        + Upload
-        <input
-            id="fileInput"
-            type="file"
-            accept=".html,.htm">
-    </label>
-
 </header>
 
+<main>
 
-<main id="main">
+    <!-- ARCADE -->
+    <section id="arcadePage">
 
-    <section class="hero">
-
-        <h1>
-            Play HTML Games 🎮
-        </h1>
-
-        <p>
-            Upload HTML games and play them directly
-            in your browser.
-        </p>
-
-        <label class="bigUpload">
-            Upload HTML Game
-            <input
-                id="heroFile"
-                type="file"
-                accept=".html,.htm">
-        </label>
-
-    </section>
-
-
-    <section>
-
-        <div class="libraryHeader">
-
-            <h2>
-                My Games
-            </h2>
-
+        <div class="toolbar">
             <input
                 id="search"
                 class="search"
                 type="text"
-                placeholder="Search games...">
+                placeholder="Search games..."
+                oninput="renderGames()"
+            >
 
+            <button class="primaryBtn"
+                    style="width:auto;margin:0"
+                    onclick="document.getElementById('fileInput').click()">
+                + Add HTML Game
+            </button>
+
+            <input
+                id="fileInput"
+                type="file"
+                accept=".html,.htm"
+                multiple
+                class="hidden"
+                onchange="handleFiles(this.files)"
+            >
         </div>
 
+        <div id="dropZone" class="dropZone">
+            Drag & drop HTML games here
+        </div>
 
-        <div id="games"></div>
+        <div id="gamesGrid" class="gamesGrid"></div>
+
+    </section>
+
+    <!-- ACCOUNT -->
+    <section id="accountPage" class="hidden">
+
+        <div class="panel">
+            <h2>👤 Account</h2>
+
+            <p class="smallText">
+                Change your display/preference name. Names must be unique.
+            </p>
+
+            <div class="profileRow">
+                <input id="newDisplayName"
+                       maxlength="30"
+                       placeholder="Display name">
+
+                <button class="primaryBtn"
+                        style="width:auto;margin:0"
+                        onclick="changeDisplayName()">
+                    Save
+                </button>
+            </div>
+
+            <div id="profileMessage"></div>
+        </div>
+
+        <div id="adminPanel" class="panel hidden">
+            <h2>🛡️ User Management</h2>
+
+            <p class="smallText">
+                Owners can manage admins and members.
+                Admins can manage members.
+            </p>
+
+            <div style="overflow-x:auto">
+                <table class="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="usersList"></tbody>
+                </table>
+            </div>
+        </div>
 
     </section>
 
 </main>
+</div>
 
-
-<!-- ================= GAME PLAYER ================= -->
-
-<div id="player">
+<!-- PLAYER -->
+<div id="playerPage" class="hidden">
 
     <div class="playerBar">
 
-        <button onclick="closeGame()">
-            ← Back
-        </button>
-
-        <strong id="gameTitle">
+        <div class="playerTitle" id="playerTitle">
             Game
-        </strong>
+        </div>
 
-        <div class="spacer"></div>
+        <div class="playerButtons">
+            <button class="secondaryBtn"
+                    onclick="reloadGame()">
+                🔄 Reload
+            </button>
 
-        <button onclick="reloadGame()">
-            ↻ Reload
-        </button>
+            <button class="secondaryBtn"
+                    onclick="fullscreenGame()">
+                ⛶ Fullscreen
+            </button>
 
-        <button onclick="fullscreenGame()">
-            ⛶ Fullscreen
-        </button>
+            <button class="secondaryBtn"
+                    onclick="closeGame()">
+                ✕ Close
+            </button>
+        </div>
 
     </div>
-
 
     <iframe
         id="gameFrame"
@@ -573,433 +570,929 @@ input[type=file]{
 
 </div>
 
-
-<!-- ================= DROP ZONE ================= -->
-
-<div id="dropZone">
-
-    <div class="dropBox">
-
-        <h2>
-            Drop your game here 🎮
-        </h2>
-
-        <p>
-            Release the HTML file to open it.
-        </p>
-
-    </div>
-
-</div>
-
-
-<div id="toast"></div>
-
-
 <script>
+/* =========================================================
+   SUPABASE CONNECTION
+   ========================================================= */
 
-/* =====================================================
+const SUPABASE_URL = "https://qmuuhknmcvsntutnzpap.supabase.co";
+const SUPABASE_KEY = "sb_publishable_K72LZa8QS6SrLy103Gnylg_HxbWiRDx";
+
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+/* =========================================================
    STATE
-===================================================== */
+   ========================================================= */
 
-let games = [];
+let currentUser = null;
+let currentProfile = null;
+
+let games = JSON.parse(
+    localStorage.getItem("htmlArcadeGames") || "[]"
+);
 
 let currentGame = null;
-
 let currentBlobURL = null;
 
-let dragCounter = 0;
+/* =========================================================
+   AUTH
+   ========================================================= */
 
+async function login() {
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+    const email =
+        document.getElementById("loginEmail").value.trim();
 
-const fileInput =
-    document.getElementById("fileInput");
+    const password =
+        document.getElementById("loginPassword").value;
 
-const heroFile =
-    document.getElementById("heroFile");
-
-const gamesContainer =
-    document.getElementById("games");
-
-const player =
-    document.getElementById("player");
-
-const gameFrame =
-    document.getElementById("gameFrame");
-
-const gameTitle =
-    document.getElementById("gameTitle");
-
-const search =
-    document.getElementById("search");
-
-const dropZone =
-    document.getElementById("dropZone");
-
-const toast =
-    document.getElementById("toast");
-
-
-/* =====================================================
-   FILE INPUTS
-===================================================== */
-
-fileInput.addEventListener(
-    "change",
-    event => {
-
-        if(event.target.files[0]){
-            handleFile(
-                event.target.files[0]
-            );
-        }
-
-        event.target.value = "";
-
+    if (!email || !password) {
+        showAuthMessage("Enter your email and password.", true);
+        return;
     }
-);
 
+    const { data, error } =
+        await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
 
-heroFile.addEventListener(
-    "change",
-    event => {
-
-        if(event.target.files[0]){
-            handleFile(
-                event.target.files[0]
-            );
-        }
-
-        event.target.value = "";
-
+    if (error) {
+        showAuthMessage(error.message, true);
+        return;
     }
-);
 
+    currentUser = data.user;
 
-/* =====================================================
-   READ HTML
-===================================================== */
+    await loadProfile();
 
-function handleFile(file){
+    if (!currentProfile) {
+        await createProfileForCurrentUser();
+    }
 
-    const filename =
-        file.name.toLowerCase();
+    await loadProfile();
 
+    if (currentProfile?.kicked) {
+        await supabase.auth.signOut();
 
-    if(
-        !filename.endsWith(".html") &&
-        !filename.endsWith(".htm")
-    ){
-
-        showToast(
-            "Please choose an HTML file."
+        showAuthMessage(
+            "This account has been kicked from HTML Arcade.",
+            true
         );
 
         return;
     }
 
+    enterApp();
+}
 
-    const reader =
-        new FileReader();
+async function signup() {
 
+    const name =
+        document.getElementById("signupName").value.trim();
 
-    reader.onload =
-        event => {
+    const email =
+        document.getElementById("signupEmail").value.trim();
+
+    const password =
+        document.getElementById("signupPassword").value;
+
+    if (!name || !email || !password) {
+        showAuthMessage(
+            "Fill in all fields.",
+            true
+        );
+        return;
+    }
+
+    if (name.length < 2) {
+        showAuthMessage(
+            "Your display name must be at least 2 characters.",
+            true
+        );
+        return;
+    }
+
+    const { data: existing } =
+        await supabase
+            .from("profiles")
+            .select("id")
+            .ilike("display_name", name)
+            .maybeSingle();
+
+    if (existing) {
+        showAuthMessage(
+            "That preference/display name is already being used.",
+            true
+        );
+        return;
+    }
+
+    const { data, error } =
+        await supabase.auth.signUp({
+            email,
+            password
+        });
+
+    if (error) {
+        showAuthMessage(error.message, true);
+        return;
+    }
+
+    if (!data.user) {
+        showAuthMessage(
+            "Account created. Check your email to verify it.",
+            false
+        );
+        return;
+    }
+
+    currentUser = data.user;
+
+    const { error: profileError } =
+        await supabase
+            .from("profiles")
+            .insert({
+                id: data.user.id,
+                display_name: name,
+                role: "member",
+                kicked: false
+            });
+
+    if (profileError) {
+        showAuthMessage(
+            profileError.message,
+            true
+        );
+        return;
+    }
+
+    /*
+       Automatically claim Owner if this is
+       the designated owner email.
+    */
+
+    if (
+        email.toLowerCase() ===
+        "ambrosewang@westminster.net"
+    ) {
+        await supabase.rpc("make_owner");
+    }
+
+    await loadProfile();
+
+    if (data.session) {
+        enterApp();
+    } else {
+        showAuthMessage(
+            "Account created! Check your email if verification is required, then sign in.",
+            false
+        );
+        showLogin();
+    }
+}
+
+async function logout() {
+
+    await supabase.auth.signOut();
+
+    currentUser = null;
+    currentProfile = null;
+
+    document.getElementById("app")
+        .classList.add("hidden");
+
+    document.getElementById("authPage")
+        .classList.remove("hidden");
+}
+
+async function loadProfile() {
+
+    if (!currentUser) return;
+
+    const { data, error } =
+        await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", currentUser.id)
+            .maybeSingle();
+
+    if (!error) {
+        currentProfile = data;
+    }
+}
+
+async function createProfileForCurrentUser() {
+
+    if (!currentUser) return;
+
+    await supabase
+        .from("profiles")
+        .insert({
+            id: currentUser.id,
+            display_name:
+                currentUser.email?.split("@")[0] ||
+                "User",
+            role:
+                currentUser.email?.toLowerCase() ===
+                "ambrosewang@westminster.net"
+                    ? "owner"
+                    : "member",
+            kicked: false
+        });
+}
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+function enterApp() {
+
+    if (!currentProfile) {
+        alert("Could not load your profile.");
+        return;
+    }
+
+    if (currentProfile.kicked) {
+        logout();
+        return;
+    }
+
+    document.getElementById("authPage")
+        .classList.add("hidden");
+
+    document.getElementById("app")
+        .classList.remove("hidden");
+
+    updateHeader();
+
+    showArcade();
+}
+
+function updateHeader() {
+
+    const name =
+        currentProfile.display_name ||
+        currentUser.email;
+
+    document.getElementById("headerName")
+        .textContent = name;
+
+    const roleElement =
+        document.getElementById("headerRole");
+
+    roleElement.textContent =
+        capitalize(currentProfile.role);
+
+    roleElement.className =
+        "roleBadge " +
+        (
+            currentProfile.role === "owner"
+                ? "ownerBadge"
+                : currentProfile.role === "admin"
+                    ? "adminBadge"
+                    : ""
+        );
+}
+
+function showArcade() {
+
+    document.getElementById("arcadePage")
+        .classList.remove("hidden");
+
+    document.getElementById("accountPage")
+        .classList.add("hidden");
+
+    renderGames();
+}
+
+async function showAccount() {
+
+    document.getElementById("arcadePage")
+        .classList.add("hidden");
+
+    document.getElementById("accountPage")
+        .classList.remove("hidden");
+
+    document.getElementById("newDisplayName")
+        .value = currentProfile.display_name || "";
+
+    const adminPanel =
+        document.getElementById("adminPanel");
+
+    if (
+        currentProfile.role === "owner" ||
+        currentProfile.role === "admin"
+    ) {
+        adminPanel.classList.remove("hidden");
+        await loadUsers();
+    } else {
+        adminPanel.classList.add("hidden");
+    }
+}
+
+/* =========================================================
+   DISPLAY NAME
+   ========================================================= */
+
+async function changeDisplayName() {
+
+    const name =
+        document.getElementById("newDisplayName")
+            .value.trim();
+
+    if (!name) {
+        showProfileMessage(
+            "Enter a display name.",
+            true
+        );
+        return;
+    }
+
+    if (name.length < 2) {
+        showProfileMessage(
+            "Name must be at least 2 characters.",
+            true
+        );
+        return;
+    }
+
+    const { data: existing } =
+        await supabase
+            .from("profiles")
+            .select("id")
+            .ilike("display_name", name)
+            .neq("id", currentUser.id)
+            .maybeSingle();
+
+    if (existing) {
+        showProfileMessage(
+            "That name is already being used.",
+            true
+        );
+        return;
+    }
+
+    const { error } =
+        await supabase
+            .from("profiles")
+            .update({
+                display_name: name
+            })
+            .eq("id", currentUser.id);
+
+    if (error) {
+        showProfileMessage(
+            error.message,
+            true
+        );
+        return;
+    }
+
+    await loadProfile();
+
+    updateHeader();
+
+    showProfileMessage(
+        "Display name updated!",
+        false
+    );
+}
+
+/* =========================================================
+   USER MANAGEMENT
+   ========================================================= */
+
+async function loadUsers() {
+
+    const { data, error } =
+        await supabase
+            .from("profiles")
+            .select("*")
+            .order("created_at", {
+                ascending: true
+            });
+
+    if (error) {
+        document.getElementById("usersList")
+            .innerHTML =
+                `<tr><td colspan="4">
+                    ${escapeHTML(error.message)}
+                </td></tr>`;
+        return;
+    }
+
+    const tbody =
+        document.getElementById("usersList");
+
+    tbody.innerHTML = "";
+
+    for (const user of data) {
+
+        const tr =
+            document.createElement("tr");
+
+        const isSelf =
+            user.id === currentUser.id;
+
+        const canManage =
+            canManageUser(user);
+
+        let actions = "";
+
+        if (user.role === "owner") {
+
+            actions =
+                `<span class="smallText">
+                    Protected
+                </span>`;
+
+        } else if (canManage) {
+
+            actions = `
+                <select
+                    onchange="changeRole('${user.id}', this.value)"
+                    style="margin:0;min-width:120px"
+                >
+                    <option value="member"
+                        ${user.role === "member" ? "selected" : ""}>
+                        Member
+                    </option>
+
+                    ${
+                        currentProfile.role === "owner"
+                            ? `
+                                <option value="admin"
+                                    ${user.role === "admin" ? "selected" : ""}>
+                                    Admin
+                                </option>
+                              `
+                            : ""
+                    }
+                </select>
+
+                <button
+                    class="dangerBtn"
+                    onclick="kickUser('${user.id}')"
+                >
+                    Kick
+                </button>
+            `;
+
+        } else if (isSelf) {
+
+            actions =
+                `<span class="smallText">
+                    Your account
+                </span>`;
+
+        } else {
+
+            actions =
+                `<span class="smallText">
+                    Protected
+                </span>`;
+        }
+
+        tr.innerHTML = `
+            <td>
+                ${escapeHTML(user.display_name || "Unnamed")}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    user.id === currentUser.id
+                        ? currentUser.email
+                        : "Hidden"
+                )}
+            </td>
+
+            <td>
+                <span class="roleBadge ${
+                    user.role === "owner"
+                        ? "ownerBadge"
+                        : user.role === "admin"
+                            ? "adminBadge"
+                            : ""
+                }">
+                    ${capitalize(user.role)}
+                </span>
+            </td>
+
+            <td>
+                ${actions}
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    }
+}
+
+function canManageUser(user) {
+
+    if (user.id === currentUser.id) {
+        return false;
+    }
+
+    if (user.role === "owner") {
+        return false;
+    }
+
+    if (currentProfile.role === "owner") {
+        return true;
+    }
+
+    if (
+        currentProfile.role === "admin" &&
+        user.role === "member"
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+async function changeRole(userId, newRole) {
+
+    const { data, error } =
+        await supabase.rpc(
+            "set_user_role",
+            {
+                target_user: userId,
+                new_role: newRole
+            }
+        );
+
+    if (error) {
+        alert(error.message);
+        await loadUsers();
+        return;
+    }
+
+    if (!data) {
+        alert(
+            "You do not have permission to change this user's role."
+        );
+
+        await loadUsers();
+        return;
+    }
+
+    await loadUsers();
+}
+
+async function kickUser(userId) {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to kick this user?"
+        );
+
+    if (!confirmed) return;
+
+    const { data, error } =
+        await supabase.rpc(
+            "kick_user",
+            {
+                target_user: userId
+            }
+        );
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    if (!data) {
+        alert(
+            "You do not have permission to kick this user."
+        );
+        return;
+    }
+
+    await loadUsers();
+}
+
+/* =========================================================
+   GAMES
+   ========================================================= */
+
+function handleFiles(fileList) {
+
+    const files =
+        Array.from(fileList);
+
+    files.forEach(file => {
+
+        if (
+            !file.name.toLowerCase().endsWith(".html") &&
+            !file.name.toLowerCase().endsWith(".htm")
+        ) {
+            return;
+        }
+
+        const reader =
+            new FileReader();
+
+        reader.onload = () => {
 
             const game = {
-
                 id:
-                    crypto.randomUUID
-                    ? crypto.randomUUID()
-                    :
-                    Date.now() +
-                    "-" +
-                    Math.random(),
+                    Date.now().toString() +
+                    Math.random()
+                        .toString(36)
+                        .slice(2),
 
                 name:
-                    file.name.replace(
-                        /\.(html|htm)$/i,
-                        ""
-                    ),
+                    file.name
+                        .replace(/\.(html|htm)$/i, ""),
 
-                code:
-                    event.target.result,
+                filename: file.name,
+
+                source: reader.result,
 
                 added:
-                    Date.now()
-
+                    new Date().toISOString()
             };
-
 
             games.push(game);
 
             saveGames();
-
             renderGames();
-
-            openGame(game);
-
         };
 
-
-    reader.onerror =
-        () => {
-
-            showToast(
-                "Couldn't read that file."
-            );
-
-        };
-
-
-    reader.readAsText(file);
-
+        reader.readAsText(file);
+    });
 }
 
+function saveGames() {
 
-/* =====================================================
-   RENDER
-===================================================== */
+    localStorage.setItem(
+        "htmlArcadeGames",
+        JSON.stringify(games)
+    );
+}
 
-function renderGames(){
+function renderGames() {
+
+    const grid =
+        document.getElementById("gamesGrid");
 
     const query =
-        search.value
-            .trim()
-            .toLowerCase();
-
-
-    gamesContainer.innerHTML = "";
-
+        document.getElementById("search")
+            .value
+            .toLowerCase()
+            .trim();
 
     const filtered =
-        games.filter(
-            game =>
-                game.name
-                    .toLowerCase()
-                    .includes(query)
+        games.filter(game =>
+            game.name
+                .toLowerCase()
+                .includes(query)
         );
 
+    grid.innerHTML = "";
 
-    if(filtered.length === 0){
+    if (!filtered.length) {
 
-        const empty =
-            document.createElement("div");
-
-        empty.className = "empty";
-
-        empty.innerHTML = `
-
-            <div class="emptyIcon">
-                🎮
+        grid.innerHTML = `
+            <div class="empty" style="grid-column:1/-1">
+                No games found.
             </div>
-
-            <h3>
-                ${
-                    games.length === 0
-                    ? "No games yet"
-                    : "No games found"
-                }
-            </h3>
-
-            <p>
-                ${
-                    games.length === 0
-                    ? "Upload an HTML game to get started."
-                    : "Try another search."
-                }
-            </p>
-
         `;
-
-        gamesContainer.appendChild(empty);
 
         return;
     }
-
 
     filtered.forEach(game => {
 
         const card =
             document.createElement("div");
 
-        card.className = "game";
-
+        card.className = "gameCard";
 
         card.innerHTML = `
-
-            <div class="gameImage">
-                🎮
+            <div class="gameTitle">
+                ${escapeHTML(game.name)}
             </div>
 
             <div class="gameInfo">
-
-                <div class="gameTitle">
-                    ${escapeHTML(game.name)}
-                </div>
-
-                <div class="gameType">
-                    HTML Game
-                </div>
-
-                <div class="gameButtons">
-
-                    <button
-                        class="playButton">
-                        ▶ Play
-                    </button>
-
-                    <button
-                        class="deleteButton"
-                        title="Delete">
-                        🗑
-                    </button>
-
-                </div>
-
+                ${escapeHTML(game.filename)}
             </div>
 
+            <div class="gameActions">
+
+                <button
+                    class="primaryBtn"
+                    style="margin:0"
+                    onclick="openGame('${game.id}')"
+                >
+                    ▶ Play
+                </button>
+
+                <button
+                    class="dangerBtn"
+                    onclick="deleteGame('${game.id}')"
+                >
+                    Delete
+                </button>
+
+            </div>
         `;
 
-
-        card
-            .querySelector(".playButton")
-            .onclick =
-                () => openGame(game);
-
-
-        card
-            .querySelector(".deleteButton")
-            .onclick =
-                () => deleteGame(game.id);
-
-
-        gamesContainer.appendChild(card);
-
+        grid.appendChild(card);
     });
-
 }
 
+function openGame(id) {
 
-/* =====================================================
-   OPEN GAME
-===================================================== */
+    const game =
+        games.find(g => g.id === id);
 
-function openGame(game){
+    if (!game) return;
 
     currentGame = game;
 
+    if (currentBlobURL) {
+        URL.revokeObjectURL(
+            currentBlobURL
+        );
+    }
 
-    gameTitle.textContent =
-        game.name;
+    const blob =
+        new Blob(
+            [game.source],
+            { type: "text/html" }
+        );
 
+    currentBlobURL =
+        URL.createObjectURL(blob);
 
-    /*
-       Remove old Blob URL.
-    */
+    const frame =
+        document.getElementById("gameFrame");
 
-    if(currentBlobURL){
+    document.getElementById("playerTitle")
+        .textContent = game.name;
 
+    frame.src =
+        currentBlobURL;
+
+    document.getElementById("playerPage")
+        .classList.remove("hidden");
+
+    document.body.style.overflow = "hidden";
+
+    setTimeout(
+        focusGame,
+        200
+    );
+}
+
+function focusGame() {
+
+    const frame =
+        document.getElementById("gameFrame");
+
+    try {
+        frame.focus();
+    } catch {}
+}
+
+function closeGame() {
+
+    const frame =
+        document.getElementById("gameFrame");
+
+    frame.src = "about:blank";
+
+    document.getElementById("playerPage")
+        .classList.add("hidden");
+
+    document.body.style.overflow = "";
+
+    if (currentBlobURL) {
         URL.revokeObjectURL(
             currentBlobURL
         );
 
         currentBlobURL = null;
-
     }
 
+    currentGame = null;
+}
 
-    /*
-       Create a real HTML document URL.
+function reloadGame() {
 
-       This is much better for large games
-       than iframe.srcdoc.
-    */
+    if (!currentGame) return;
 
-    const blob =
-        new Blob(
-            [game.code],
-            {
-                type:
-                    "text/html;charset=utf-8"
-            }
-        );
+    const frame =
+        document.getElementById("gameFrame");
 
-
-    currentBlobURL =
-        URL.createObjectURL(blob);
-
-
-    gameFrame.src =
+    frame.src =
         currentBlobURL;
-
-
-    player.style.display =
-        "block";
-
-
-    document.body.style.overflow =
-        "hidden";
-
-
-    /*
-       Give the game keyboard focus.
-
-       This is especially important for
-       Eaglercraft and other keyboard games.
-    */
 
     setTimeout(
         focusGame,
-        250
+        200
     );
-
 }
 
+async function fullscreenGame() {
 
-/* =====================================================
-   GAME FOCUS
-===================================================== */
+    const frame =
+        document.getElementById("gameFrame");
 
-function focusGame(){
+    try {
 
-    try{
+        if (frame.requestFullscreen) {
+            await frame.requestFullscreen();
+        }
 
-        gameFrame.focus();
+        else if (frame.webkitRequestFullscreen) {
+            frame.webkitRequestFullscreen();
+        }
 
-    }catch(error){
+    } catch (error) {
+        console.error(error);
+    }
+}
 
-        console.log(error);
+function deleteGame(id) {
 
+    const game =
+        games.find(g => g.id === id);
+
+    if (!game) return;
+
+    if (
+        !confirm(
+            `Delete "${game.name}"?`
+        )
+    ) {
+        return;
     }
 
-}
-
-
-/*
-   When the game finishes loading,
-   focus it automatically.
-*/
-
-gameFrame.addEventListener(
-    "load",
-    () => {
-
-        setTimeout(
-            focusGame,
-            100
+    games =
+        games.filter(
+            g => g.id !== id
         );
 
+    saveGames();
+    renderGames();
+}
+
+/* =========================================================
+   DRAG & DROP
+   ========================================================= */
+
+const dropZone =
+    document.getElementById("dropZone");
+
+dropZone.addEventListener(
+    "dragover",
+    event => {
+        event.preventDefault();
+        dropZone.classList.add("dragging");
     }
 );
 
+dropZone.addEventListener(
+    "dragleave",
+    () => {
+        dropZone.classList.remove("dragging");
+    }
+);
 
-/*
-   Clicking the game gives it focus.
-*/
+dropZone.addEventListener(
+    "drop",
+    event => {
+
+        event.preventDefault();
+
+        dropZone.classList.remove(
+            "dragging"
+        );
+
+        handleFiles(
+            event.dataTransfer.files
+        );
+    }
+);
+
+/* =========================================================
+   GAME KEYBOARD / FOCUS
+   ========================================================= */
+
+const gameFrame =
+    document.getElementById("gameFrame");
+
+gameFrame.addEventListener(
+    "load",
+    focusGame
+);
 
 gameFrame.addEventListener(
     "mouseenter",
@@ -1011,458 +1504,196 @@ gameFrame.addEventListener(
     focusGame
 );
 
-
-/* =====================================================
-   KEYBOARD HANDLING
-===================================================== */
-
-/*
-   IMPORTANT:
-
-   Do NOT prevent WASD here.
-
-   The game iframe receives the keyboard
-   events instead.
-*/
-
 document.addEventListener(
     "keydown",
     event => {
 
-        /*
-           Escape closes the player.
-
-           Only do this when the game is open.
-        */
-
-        if(
+        if (
             event.key === "Escape" &&
-            player.style.display === "block"
-        ){
-
-            /*
-               Don't close if the browser is
-               currently in fullscreen.
-            */
-
-            if(
-                document.fullscreenElement
-            ){
-
-                return;
-
-            }
-
+            !document
+                .getElementById("playerPage")
+                .classList
+                .contains("hidden")
+        ) {
             closeGame();
-
         }
 
     }
 );
 
+/* =========================================================
+   AUTH UI
+   ========================================================= */
 
-/* =====================================================
-   CLOSE GAME
-===================================================== */
+function showSignup() {
 
-function closeGame(){
+    document.getElementById("loginForm")
+        .classList.add("hidden");
 
-    gameFrame.src =
-        "about:blank";
+    document.getElementById("signupForm")
+        .classList.remove("hidden");
 
-
-    player.style.display =
-        "none";
-
-
-    document.body.style.overflow =
-        "";
-
-
-    currentGame = null;
-
-
-    if(currentBlobURL){
-
-        URL.revokeObjectURL(
-            currentBlobURL
-        );
-
-        currentBlobURL = null;
-
-    }
-
+    clearMessages();
 }
 
+function showLogin() {
 
-/* =====================================================
-   RELOAD
-===================================================== */
+    document.getElementById("signupForm")
+        .classList.add("hidden");
 
-function reloadGame(){
+    document.getElementById("loginForm")
+        .classList.remove("hidden");
 
-    if(!currentGame){
-        return;
-    }
-
-
-    /*
-       Recreate the Blob URL.
-
-       This completely resets the game.
-    */
-
-    if(currentBlobURL){
-
-        URL.revokeObjectURL(
-            currentBlobURL
-        );
-
-    }
-
-
-    const blob =
-        new Blob(
-            [currentGame.code],
-            {
-                type:
-                    "text/html;charset=utf-8"
-            }
-        );
-
-
-    currentBlobURL =
-        URL.createObjectURL(blob);
-
-
-    gameFrame.src =
-        currentBlobURL;
-
-
-    setTimeout(
-        focusGame,
-        250
-    );
-
+    clearMessages();
 }
 
+function showAuthMessage(message, error) {
 
-/* =====================================================
-   FULLSCREEN
-===================================================== */
+    const element =
+        document.getElementById("authMessage");
 
-function fullscreenGame(){
+    element.className =
+        error
+            ? "error"
+            : "success";
 
-    if(
-        gameFrame.requestFullscreen
-    ){
-
-        gameFrame.requestFullscreen();
-
-        return;
-
-    }
-
-
-    if(
-        gameFrame.webkitRequestFullscreen
-    ){
-
-        gameFrame.webkitRequestFullscreen();
-
-    }
-
-}
-
-
-/* =====================================================
-   DELETE
-===================================================== */
-
-function deleteGame(id){
-
-    const game =
-        games.find(
-            g => g.id === id
-        );
-
-
-    if(!game){
-        return;
-    }
-
-
-    if(
-        !confirm(
-            `Delete "${game.name}"?`
-        )
-    ){
-
-        return;
-
-    }
-
-
-    games =
-        games.filter(
-            g => g.id !== id
-        );
-
-
-    saveGames();
-
-    renderGames();
-
-
-    showToast(
-        "Game deleted."
-    );
-
-}
-
-
-/* =====================================================
-   STORAGE
-===================================================== */
-
-function saveGames(){
-
-    try{
-
-        localStorage.setItem(
-            "htmlArcadeGames",
-            JSON.stringify(games)
-        );
-
-    }catch(error){
-
-        console.error(
-            "Storage error:",
-            error
-        );
-
-
-        showToast(
-            "This game is too large to save locally."
-        );
-
-    }
-
-}
-
-
-function loadGames(){
-
-    try{
-
-        const saved =
-            localStorage.getItem(
-                "htmlArcadeGames"
-            );
-
-
-        if(saved){
-
-            games =
-                JSON.parse(saved);
-
-        }
-
-    }catch(error){
-
-        console.error(
-            "Load error:",
-            error
-        );
-
-        games = [];
-
-    }
-
-
-    renderGames();
-
-}
-
-
-/* =====================================================
-   SEARCH
-===================================================== */
-
-search.addEventListener(
-    "input",
-    renderGames
-);
-
-
-/* =====================================================
-   NAVIGATION
-===================================================== */
-
-function goHome(){
-
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
-
-}
-
-
-function goLibrary(){
-
-    document
-        .querySelector("#games")
-        .scrollIntoView({
-            behavior:"smooth"
-        });
-
-}
-
-
-/* =====================================================
-   DRAG & DROP
-===================================================== */
-
-document.addEventListener(
-    "dragenter",
-    event => {
-
-        event.preventDefault();
-
-        dragCounter++;
-
-        dropZone.classList.add(
-            "active"
-        );
-
-    }
-);
-
-
-document.addEventListener(
-    "dragover",
-    event => {
-
-        event.preventDefault();
-
-    }
-);
-
-
-document.addEventListener(
-    "dragleave",
-    event => {
-
-        event.preventDefault();
-
-        dragCounter--;
-
-
-        if(dragCounter <= 0){
-
-            dragCounter = 0;
-
-            dropZone.classList.remove(
-                "active"
-            );
-
-        }
-
-    }
-);
-
-
-document.addEventListener(
-    "drop",
-    event => {
-
-        event.preventDefault();
-
-        dragCounter = 0;
-
-        dropZone.classList.remove(
-            "active"
-        );
-
-
-        const file =
-            event.dataTransfer.files[0];
-
-
-        if(file){
-
-            handleFile(file);
-
-        }
-
-    }
-);
-
-
-/* =====================================================
-   TOAST
-===================================================== */
-
-let toastTimer;
-
-
-function showToast(message){
-
-    toast.textContent =
+    element.textContent =
         message;
+}
 
+function showProfileMessage(message, error) {
 
-    toast.classList.add(
-        "show"
-    );
-
-
-    clearTimeout(
-        toastTimer
-    );
-
-
-    toastTimer =
-        setTimeout(
-            () => {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-            },
-            2500
+    const element =
+        document.getElementById(
+            "profileMessage"
         );
 
+    element.className =
+        error
+            ? "error"
+            : "success";
+
+    element.textContent =
+        message;
 }
 
+function clearMessages() {
 
-/* =====================================================
-   ESCAPE
-===================================================== */
+    document.getElementById(
+        "authMessage"
+    ).textContent = "";
 
-function escapeHTML(text){
-
-    const div =
-        document.createElement("div");
-
-
-    div.textContent =
-        text;
-
-
-    return div.innerHTML;
-
+    document.getElementById(
+        "profileMessage"
+    ).textContent = "";
 }
 
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
-/* =====================================================
-   START
-===================================================== */
+function capitalize(value) {
 
-loadGames();
+    if (!value) return "";
 
+    return value.charAt(0).toUpperCase()
+        + value.slice(1);
+}
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+async function startup() {
+
+    const {
+        data: {
+            session
+        }
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+        return;
+    }
+
+    currentUser =
+        session.user;
+
+    await loadProfile();
+
+    if (!currentProfile) {
+        await createProfileForCurrentUser();
+        await loadProfile();
+    }
+
+    if (currentProfile?.kicked) {
+
+        await supabase.auth.signOut();
+
+        showAuthMessage(
+            "This account has been kicked from HTML Arcade.",
+            true
+        );
+
+        return;
+    }
+
+    enterApp();
+}
+
+supabase.auth.onAuthStateChange(
+    async (event, session) => {
+
+        if (
+            event === "SIGNED_OUT"
+        ) {
+            currentUser = null;
+            currentProfile = null;
+
+            document.getElementById("app")
+                .classList.add("hidden");
+
+            document.getElementById("authPage")
+                .classList.remove("hidden");
+
+            return;
+        }
+
+        if (
+            event === "SIGNED_IN" &&
+            session
+        ) {
+            currentUser =
+                session.user;
+
+            await loadProfile();
+
+            if (!currentProfile) {
+                await createProfileForCurrentUser();
+                await loadProfile();
+            }
+
+            if (currentProfile?.kicked) {
+                await supabase.auth.signOut();
+                return;
+            }
+
+            enterApp();
+        }
+    }
+);
+
+startup();
 </script>
 
 </body>
