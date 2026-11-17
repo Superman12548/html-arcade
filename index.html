@@ -2,339 +2,441 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>HTML Arcade</title>
 
 <style>
-* {
-    box-sizing: border-box;
+*{
+    box-sizing:border-box;
 }
 
-html, body {
-    margin: 0;
-    min-height: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #080b14;
-    color: white;
+html,body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+    background:#070a12;
+    color:#fff;
+    font-family:Inter,Arial,Helvetica,sans-serif;
 }
 
-body {
-    min-height: 100vh;
+body{
+    overflow-x:hidden;
 }
 
-header {
-    height: 70px;
-    background: #111625;
-    border-bottom: 1px solid #252d43;
-    display: flex;
-    align-items: center;
-    padding: 0 25px;
-    gap: 20px;
-    position: sticky;
-    top: 0;
-    z-index: 20;
+button,
+input{
+    font:inherit;
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-    white-space: nowrap;
+button{
+    cursor:pointer;
 }
 
-.logo span {
-    color: #6c7cff;
+.hidden{
+    display:none!important;
 }
 
-nav {
-    display: flex;
-    gap: 8px;
+/* ================= HEADER ================= */
+
+header{
+    height:68px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:0 22px;
+    background:#101522;
+    border-bottom:1px solid #252d42;
+    position:sticky;
+    top:0;
+    z-index:50;
 }
 
-nav button {
-    background: transparent;
-    border: 0;
-    color: #9da6bd;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
+.logo{
+    font-size:23px;
+    font-weight:800;
+    white-space:nowrap;
 }
 
-nav button:hover,
-nav button.active {
-    background: #20283e;
-    color: white;
+.logo span{
+    color:#7282ff;
 }
 
-.spacer {
-    flex: 1;
+.nav{
+    display:flex;
+    gap:5px;
 }
 
-.upload {
-    background: #6475ff;
-    border: 0;
-    color: white;
-    padding: 11px 17px;
-    border-radius: 9px;
-    cursor: pointer;
-    font-weight: bold;
-    white-space: nowrap;
+.nav button{
+    border:0;
+    background:transparent;
+    color:#929cb5;
+    padding:9px 13px;
+    border-radius:8px;
 }
 
-.upload:hover {
-    background: #7887ff;
+.nav button:hover,
+.nav button.active{
+    background:#202940;
+    color:#fff;
 }
 
-main {
-    max-width: 1200px;
-    margin: auto;
-    padding: 35px 25px;
+.spacer{
+    flex:1;
 }
 
-.hero {
-    background: linear-gradient(135deg, #151c35, #101526);
-    border: 1px solid #252e48;
-    border-radius: 18px;
-    padding: 40px;
-    margin-bottom: 30px;
+.uploadButton{
+    background:#6577ff;
+    color:#fff;
+    border:0;
+    padding:10px 16px;
+    border-radius:9px;
+    font-weight:700;
 }
 
-.hero h1 {
-    margin: 0 0 10px;
-    font-size: 38px;
+.uploadButton:hover{
+    background:#7788ff;
 }
 
-.hero p {
-    color: #9fa9c0;
-    margin: 0 0 25px;
+/* ================= MAIN ================= */
+
+main{
+    width:min(1200px,100%);
+    margin:auto;
+    padding:32px 22px 70px;
 }
 
-.bigUpload {
-    display: inline-block;
-    background: #6475ff;
-    padding: 13px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
+.hero{
+    padding:42px;
+    border:1px solid #29334d;
+    border-radius:20px;
+    background:
+        radial-gradient(
+            circle at 80% 20%,
+            #26366d 0,
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #151c31,
+            #0d1220
+        );
+    margin-bottom:30px;
 }
 
-.bigUpload:hover {
-    background: #7887ff;
+.hero h1{
+    font-size:40px;
+    margin:0 0 10px;
 }
 
-input[type="file"] {
-    display: none;
+.hero p{
+    color:#a3adc3;
+    margin:0 0 24px;
+    font-size:16px;
 }
 
-.sectionTitle {
-    display: flex;
-    align-items: center;
-    margin-bottom: 18px;
+.bigUpload{
+    display:inline-block;
+    background:#6577ff;
+    padding:12px 19px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
 }
 
-.sectionTitle h2 {
-    margin: 0;
+.bigUpload:hover{
+    background:#7788ff;
 }
 
-#games {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 18px;
+input[type=file]{
+    display:none;
 }
 
-.empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-    border: 1px dashed #303a56;
-    border-radius: 15px;
-    color: #7f8aa5;
+/* ================= LIBRARY ================= */
+
+.libraryHeader{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-bottom:18px;
 }
 
-.game {
-    background: #111625;
-    border: 1px solid #252d43;
-    border-radius: 14px;
-    overflow: hidden;
-    transition: .2s;
+.libraryHeader h2{
+    margin:0;
 }
 
-.game:hover {
-    transform: translateY(-3px);
-    border-color: #5265d9;
+.search{
+    margin-left:auto;
+    background:#111827;
+    border:1px solid #2a344d;
+    color:#fff;
+    border-radius:9px;
+    padding:10px 13px;
+    width:230px;
+    outline:none;
 }
 
-.gameImage {
-    height: 135px;
-    background: linear-gradient(135deg, #252d52, #171d32);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 45px;
+.search:focus{
+    border-color:#6577ff;
 }
 
-.gameInfo {
-    padding: 15px;
+#games{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fill,minmax(240px,1fr));
+    gap:18px;
 }
 
-.gameInfo h3 {
-    margin: 0 0 6px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.empty{
+    grid-column:1/-1;
+    border:1px dashed #34405c;
+    border-radius:16px;
+    text-align:center;
+    padding:65px 20px;
+    color:#7f8aa3;
 }
 
-.gameInfo p {
-    color: #7f8aa5;
-    font-size: 13px;
-    margin: 0 0 15px;
+.emptyIcon{
+    font-size:48px;
+    margin-bottom:10px;
 }
 
-.gameButtons {
-    display: flex;
-    gap: 8px;
+.game{
+    overflow:hidden;
+    border:1px solid #28324a;
+    border-radius:15px;
+    background:#101521;
+    transition:
+        transform .15s,
+        border-color .15s;
 }
 
-.play {
-    flex: 1;
-    background: #6475ff;
-    color: white;
-    border: 0;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
+.game:hover{
+    transform:translateY(-3px);
+    border-color:#596bdf;
 }
 
-.play:hover {
-    background: #7887ff;
+.gameImage{
+    height:140px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(
+            circle,
+            #2d3a76,
+            #151b2e 65%
+        );
+    font-size:52px;
 }
 
-.delete {
-    background: #20283e;
-    color: #ff8f8f;
-    border: 0;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
+.gameInfo{
+    padding:15px;
 }
 
-.delete:hover {
-    background: #38202a;
+.gameTitle{
+    font-weight:700;
+    margin-bottom:5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
-/* PLAYER */
-
-#player {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: #05070d;
-    z-index: 100;
+.gameType{
+    color:#7e89a3;
+    font-size:13px;
+    margin-bottom:14px;
 }
 
-.playerBar {
-    height: 60px;
-    background: #111625;
-    border-bottom: 1px solid #252d43;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    gap: 12px;
+.gameButtons{
+    display:flex;
+    gap:7px;
 }
 
-.playerBar strong {
-    font-size: 16px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.playButton{
+    flex:1;
+    border:0;
+    border-radius:8px;
+    padding:10px;
+    background:#6577ff;
+    color:#fff;
+    font-weight:700;
 }
 
-.playerButton {
-    background: #20283e;
-    color: white;
-    border: 0;
-    padding: 9px 13px;
-    border-radius: 8px;
-    cursor: pointer;
+.playButton:hover{
+    background:#7888ff;
 }
 
-.playerButton:hover {
-    background: #303b5b;
+.deleteButton{
+    border:0;
+    border-radius:8px;
+    padding:10px 12px;
+    color:#ff9292;
+    background:#222a3d;
 }
 
-#gameFrame {
-    display: block;
-    width: 100%;
-    height: calc(100vh - 60px);
-    border: 0;
-    background: white;
+.deleteButton:hover{
+    background:#39232d;
 }
 
-/* When the game is fullscreen */
-#gameFrame:fullscreen {
-    width: 100vw;
-    height: 100vh;
+/* ================= PLAYER ================= */
+
+#player{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    background:#000;
 }
 
-/* DROP AREA */
-
-#dropArea {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(5, 8, 18, 0.92);
-    align-items: center;
-    justify-content: center;
+.playerBar{
+    height:58px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:0 12px;
+    background:#101522;
+    border-bottom:1px solid #252d42;
 }
 
-#dropArea.active {
-    display: flex;
+.playerBar button{
+    border:0;
+    border-radius:8px;
+    padding:9px 13px;
+    color:#fff;
+    background:#202940;
 }
 
-.dropBox {
-    border: 2px dashed #6475ff;
-    border-radius: 20px;
-    padding: 60px 90px;
-    text-align: center;
-    background: #151c35;
+.playerBar button:hover{
+    background:#303b5a;
 }
 
-.dropBox h2 {
-    margin-top: 0;
+#gameTitle{
+    max-width:35vw;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
-.dropBox p {
-    color: #9fa9c0;
+#gameFrame{
+    display:block;
+    width:100%;
+    height:calc(100vh - 58px);
+    border:0;
+    background:#000;
 }
 
-/* MOBILE */
+/*
+   Important:
+   No sandbox is used here.
 
-@media(max-width:700px) {
+   This gives complex HTML games much
+   better compatibility with WebGL,
+   WebAssembly, workers, keyboard input,
+   IndexedDB, audio, etc.
+*/
 
-    header {
-        padding: 0 12px;
+#gameFrame:fullscreen{
+    width:100vw;
+    height:100vh;
+}
+
+/* ================= DROP ZONE ================= */
+
+#dropZone{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:2000;
+    align-items:center;
+    justify-content:center;
+    background:rgba(4,7,14,.94);
+}
+
+#dropZone.active{
+    display:flex;
+}
+
+.dropBox{
+    width:min(600px,90%);
+    text-align:center;
+    padding:65px 30px;
+    border:2px dashed #687aff;
+    border-radius:22px;
+    background:#151c31;
+}
+
+.dropBox h2{
+    margin:0 0 10px;
+    font-size:28px;
+}
+
+.dropBox p{
+    color:#9ba6be;
+}
+
+/* ================= TOAST ================= */
+
+#toast{
+    position:fixed;
+    bottom:25px;
+    left:50%;
+    transform:
+        translateX(-50%)
+        translateY(20px);
+    opacity:0;
+    pointer-events:none;
+    background:#202940;
+    border:1px solid #34415f;
+    color:#fff;
+    padding:11px 17px;
+    border-radius:10px;
+    z-index:5000;
+    transition:.2s;
+}
+
+#toast.show{
+    opacity:1;
+    transform:
+        translateX(-50%)
+        translateY(0);
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:700px){
+
+    header{
+        padding:0 12px;
+        gap:10px;
     }
 
-    nav {
-        display: none;
+    .nav{
+        display:none;
     }
 
-    main {
-        padding: 20px 12px;
+    .uploadButton{
+        padding:9px 11px;
     }
 
-    .hero {
-        padding: 25px;
+    main{
+        padding:20px 12px 50px;
     }
 
-    .hero h1 {
-        font-size: 30px;
+    .hero{
+        padding:28px 22px;
     }
 
-    .upload {
-        padding: 9px 12px;
+    .hero h1{
+        font-size:30px;
+    }
+
+    .libraryHeader{
+        flex-wrap:wrap;
+    }
+
+    .search{
+        width:100%;
+        margin-left:0;
     }
 
 }
@@ -349,31 +451,34 @@ input[type="file"] {
         HTML <span>Arcade</span>
     </div>
 
-    <nav>
-        <button class="active" onclick="showHome()">
+    <div class="nav">
+        <button
+            class="active"
+            id="homeButton"
+            onclick="goHome()">
             Home
         </button>
 
-        <button onclick="showLibrary()">
+        <button
+            onclick="goLibrary()">
             My Games
         </button>
-    </nav>
+    </div>
 
     <div class="spacer"></div>
 
-    <label class="upload">
-        + Upload Game
+    <label class="uploadButton">
+        + Upload
         <input
-            type="file"
             id="fileInput"
-            accept=".html,.htm"
-        >
+            type="file"
+            accept=".html,.htm">
     </label>
 
 </header>
 
 
-<main id="home">
+<main id="main">
 
     <section class="hero">
 
@@ -382,60 +487,52 @@ input[type="file"] {
         </h1>
 
         <p>
-            Upload an HTML game and run it directly in your browser.
+            Upload HTML games and play them directly
+            in your browser.
         </p>
 
         <label class="bigUpload">
             Upload HTML Game
             <input
-                type="file"
                 id="heroFile"
-                accept=".html,.htm"
-            >
+                type="file"
+                accept=".html,.htm">
         </label>
 
     </section>
 
 
-    <div class="sectionTitle">
-        <h2>
-            My Games
-        </h2>
-    </div>
+    <section>
 
+        <div class="libraryHeader">
 
-    <section id="games">
+            <h2>
+                My Games
+            </h2>
 
-        <div class="empty" id="empty">
-
-            <div style="font-size:40px;">
-                🎮
-            </div>
-
-            <h3>
-                No games yet
-            </h3>
-
-            <p>
-                Upload an HTML file to add your first game.
-            </p>
+            <input
+                id="search"
+                class="search"
+                type="text"
+                placeholder="Search games...">
 
         </div>
+
+
+        <div id="games"></div>
 
     </section>
 
 </main>
 
 
-<!-- GAME PLAYER -->
+<!-- ================= GAME PLAYER ================= -->
 
 <div id="player">
 
     <div class="playerBar">
 
-        <button
-            class="playerButton"
-            onclick="closeGame()">
+        <button onclick="closeGame()">
             ← Back
         </button>
 
@@ -445,15 +542,11 @@ input[type="file"] {
 
         <div class="spacer"></div>
 
-        <button
-            class="playerButton"
-            onclick="reloadGame()">
+        <button onclick="reloadGame()">
             ↻ Reload
         </button>
 
-        <button
-            class="playerButton"
-            onclick="fullscreenGame()">
+        <button onclick="fullscreenGame()">
             ⛶ Fullscreen
         </button>
 
@@ -462,6 +555,7 @@ input[type="file"] {
 
     <iframe
         id="gameFrame"
+        title="HTML Game"
         allow="
             fullscreen;
             autoplay;
@@ -471,7 +565,8 @@ input[type="file"] {
             accelerometer;
             gyroscope;
             clipboard-read;
-            clipboard-write
+            clipboard-write;
+            web-share
         "
         allowfullscreen>
     </iframe>
@@ -479,18 +574,18 @@ input[type="file"] {
 </div>
 
 
-<!-- DRAG AND DROP -->
+<!-- ================= DROP ZONE ================= -->
 
-<div id="dropArea">
+<div id="dropZone">
 
     <div class="dropBox">
 
         <h2>
-            Drop your HTML game here 🎮
+            Drop your game here 🎮
         </h2>
 
         <p>
-            Release the file to open it.
+            Release the HTML file to open it.
         </p>
 
     </div>
@@ -498,11 +593,14 @@ input[type="file"] {
 </div>
 
 
+<div id="toast"></div>
+
+
 <script>
 
-/* =========================
-   GAME STORAGE
-========================= */
+/* =====================================================
+   STATE
+===================================================== */
 
 let games = [];
 
@@ -510,10 +608,12 @@ let currentGame = null;
 
 let currentBlobURL = null;
 
+let dragCounter = 0;
 
-/* =========================
+
+/* =====================================================
    ELEMENTS
-========================= */
+===================================================== */
 
 const fileInput =
     document.getElementById("fileInput");
@@ -524,9 +624,6 @@ const heroFile =
 const gamesContainer =
     document.getElementById("games");
 
-const empty =
-    document.getElementById("empty");
-
 const player =
     document.getElementById("player");
 
@@ -536,23 +633,31 @@ const gameFrame =
 const gameTitle =
     document.getElementById("gameTitle");
 
-const dropArea =
-    document.getElementById("dropArea");
+const search =
+    document.getElementById("search");
+
+const dropZone =
+    document.getElementById("dropZone");
+
+const toast =
+    document.getElementById("toast");
 
 
-/* =========================
-   FILE INPUT
-========================= */
+/* =====================================================
+   FILE INPUTS
+===================================================== */
 
 fileInput.addEventListener(
     "change",
-    function() {
+    event => {
 
-        if (this.files.length > 0) {
-            handleFile(this.files[0]);
+        if(event.target.files[0]){
+            handleFile(
+                event.target.files[0]
+            );
         }
 
-        this.value = "";
+        event.target.value = "";
 
     }
 );
@@ -560,40 +665,37 @@ fileInput.addEventListener(
 
 heroFile.addEventListener(
     "change",
-    function() {
+    event => {
 
-        if (this.files.length > 0) {
-            handleFile(this.files[0]);
+        if(event.target.files[0]){
+            handleFile(
+                event.target.files[0]
+            );
         }
 
-        this.value = "";
+        event.target.value = "";
 
     }
 );
 
 
-/* =========================
-   LOAD HTML FILE
-========================= */
+/* =====================================================
+   READ HTML
+===================================================== */
 
-function handleFile(file) {
+function handleFile(file){
 
-    if (!file) {
-        return;
-    }
-
-
-    const name =
+    const filename =
         file.name.toLowerCase();
 
 
-    if (
-        !name.endsWith(".html") &&
-        !name.endsWith(".htm")
-    ) {
+    if(
+        !filename.endsWith(".html") &&
+        !filename.endsWith(".htm")
+    ){
 
-        alert(
-            "Please upload an HTML file."
+        showToast(
+            "Please choose an HTML file."
         );
 
         return;
@@ -604,49 +706,53 @@ function handleFile(file) {
         new FileReader();
 
 
-    reader.onload = function(event) {
+    reader.onload =
+        event => {
 
-        const game = {
+            const game = {
 
-            id:
-                Date.now() +
-                "-" +
-                Math.random()
-                    .toString(36)
-                    .substring(2),
+                id:
+                    crypto.randomUUID
+                    ? crypto.randomUUID()
+                    :
+                    Date.now() +
+                    "-" +
+                    Math.random(),
 
-            name:
-                file.name.replace(
-                    /\.(html|htm)$/i,
-                    ""
-                ),
+                name:
+                    file.name.replace(
+                        /\.(html|htm)$/i,
+                        ""
+                    ),
 
-            code:
-                event.target.result
+                code:
+                    event.target.result,
+
+                added:
+                    Date.now()
+
+            };
+
+
+            games.push(game);
+
+            saveGames();
+
+            renderGames();
+
+            openGame(game);
 
         };
 
 
-        games.push(game);
+    reader.onerror =
+        () => {
 
+            showToast(
+                "Couldn't read that file."
+            );
 
-        saveGames();
-
-        renderGames();
-
-
-        openGame(game);
-
-    };
-
-
-    reader.onerror = function() {
-
-        alert(
-            "Could not read that file."
-        );
-
-    };
+        };
 
 
     reader.readAsText(file);
@@ -654,30 +760,71 @@ function handleFile(file) {
 }
 
 
-/* =========================
-   RENDER GAME LIBRARY
-========================= */
+/* =====================================================
+   RENDER
+===================================================== */
 
-function renderGames() {
+function renderGames(){
+
+    const query =
+        search.value
+            .trim()
+            .toLowerCase();
+
 
     gamesContainer.innerHTML = "";
 
 
-    if (games.length === 0) {
-
-        gamesContainer.appendChild(
-            empty
+    const filtered =
+        games.filter(
+            game =>
+                game.name
+                    .toLowerCase()
+                    .includes(query)
         );
+
+
+    if(filtered.length === 0){
+
+        const empty =
+            document.createElement("div");
+
+        empty.className = "empty";
+
+        empty.innerHTML = `
+
+            <div class="emptyIcon">
+                🎮
+            </div>
+
+            <h3>
+                ${
+                    games.length === 0
+                    ? "No games yet"
+                    : "No games found"
+                }
+            </h3>
+
+            <p>
+                ${
+                    games.length === 0
+                    ? "Upload an HTML game to get started."
+                    : "Try another search."
+                }
+            </p>
+
+        `;
+
+        gamesContainer.appendChild(empty);
 
         return;
     }
 
 
-    games.forEach(function(game) {
+    filtered.forEach(game => {
 
         const card =
             document.createElement("div");
-
 
         card.className = "game";
 
@@ -690,21 +837,24 @@ function renderGames() {
 
             <div class="gameInfo">
 
-                <h3>
+                <div class="gameTitle">
                     ${escapeHTML(game.name)}
-                </h3>
+                </div>
 
-                <p>
+                <div class="gameType">
                     HTML Game
-                </p>
+                </div>
 
                 <div class="gameButtons">
 
-                    <button class="play">
+                    <button
+                        class="playButton">
                         ▶ Play
                     </button>
 
-                    <button class="delete">
+                    <button
+                        class="deleteButton"
+                        title="Delete">
                         🗑
                     </button>
 
@@ -716,21 +866,15 @@ function renderGames() {
 
 
         card
-            .querySelector(".play")
-            .onclick = function() {
-
-                openGame(game);
-
-            };
+            .querySelector(".playButton")
+            .onclick =
+                () => openGame(game);
 
 
         card
-            .querySelector(".delete")
-            .onclick = function() {
-
-                deleteGame(game.id);
-
-            };
+            .querySelector(".deleteButton")
+            .onclick =
+                () => deleteGame(game.id);
 
 
         gamesContainer.appendChild(card);
@@ -740,11 +884,11 @@ function renderGames() {
 }
 
 
-/* =========================
+/* =====================================================
    OPEN GAME
-========================= */
+===================================================== */
 
-function openGame(game) {
+function openGame(game){
 
     currentGame = game;
 
@@ -754,17 +898,10 @@ function openGame(game) {
 
 
     /*
-       IMPORTANT:
-
-       Instead of srcdoc, create a
-       real Blob URL.
-
-       This is much more compatible
-       with large HTML applications,
-       WebGL, WebAssembly, etc.
+       Remove old Blob URL.
     */
 
-    if (currentBlobURL) {
+    if(currentBlobURL){
 
         URL.revokeObjectURL(
             currentBlobURL
@@ -774,6 +911,13 @@ function openGame(game) {
 
     }
 
+
+    /*
+       Create a real HTML document URL.
+
+       This is much better for large games
+       than iframe.srcdoc.
+    */
 
     const blob =
         new Blob(
@@ -789,10 +933,6 @@ function openGame(game) {
         URL.createObjectURL(blob);
 
 
-    /*
-       Load the HTML as a real document.
-    */
-
     gameFrame.src =
         currentBlobURL;
 
@@ -804,14 +944,128 @@ function openGame(game) {
     document.body.style.overflow =
         "hidden";
 
+
+    /*
+       Give the game keyboard focus.
+
+       This is especially important for
+       Eaglercraft and other keyboard games.
+    */
+
+    setTimeout(
+        focusGame,
+        250
+    );
+
 }
 
 
-/* =========================
-   CLOSE GAME
-========================= */
+/* =====================================================
+   GAME FOCUS
+===================================================== */
 
-function closeGame() {
+function focusGame(){
+
+    try{
+
+        gameFrame.focus();
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+
+/*
+   When the game finishes loading,
+   focus it automatically.
+*/
+
+gameFrame.addEventListener(
+    "load",
+    () => {
+
+        setTimeout(
+            focusGame,
+            100
+        );
+
+    }
+);
+
+
+/*
+   Clicking the game gives it focus.
+*/
+
+gameFrame.addEventListener(
+    "mouseenter",
+    focusGame
+);
+
+gameFrame.addEventListener(
+    "click",
+    focusGame
+);
+
+
+/* =====================================================
+   KEYBOARD HANDLING
+===================================================== */
+
+/*
+   IMPORTANT:
+
+   Do NOT prevent WASD here.
+
+   The game iframe receives the keyboard
+   events instead.
+*/
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        /*
+           Escape closes the player.
+
+           Only do this when the game is open.
+        */
+
+        if(
+            event.key === "Escape" &&
+            player.style.display === "block"
+        ){
+
+            /*
+               Don't close if the browser is
+               currently in fullscreen.
+            */
+
+            if(
+                document.fullscreenElement
+            ){
+
+                return;
+
+            }
+
+            closeGame();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   CLOSE GAME
+===================================================== */
+
+function closeGame(){
 
     gameFrame.src =
         "about:blank";
@@ -828,7 +1082,7 @@ function closeGame() {
     currentGame = null;
 
 
-    if (currentBlobURL) {
+    if(currentBlobURL){
 
         URL.revokeObjectURL(
             currentBlobURL
@@ -841,48 +1095,67 @@ function closeGame() {
 }
 
 
-/* =========================
-   RELOAD GAME
-========================= */
+/* =====================================================
+   RELOAD
+===================================================== */
 
-function reloadGame() {
+function reloadGame(){
 
-    if (!currentGame) {
+    if(!currentGame){
         return;
     }
 
 
     /*
-       Reload the current Blob URL.
+       Recreate the Blob URL.
+
+       This completely resets the game.
     */
 
+    if(currentBlobURL){
+
+        URL.revokeObjectURL(
+            currentBlobURL
+        );
+
+    }
+
+
+    const blob =
+        new Blob(
+            [currentGame.code],
+            {
+                type:
+                    "text/html;charset=utf-8"
+            }
+        );
+
+
+    currentBlobURL =
+        URL.createObjectURL(blob);
+
+
     gameFrame.src =
-        "about:blank";
+        currentBlobURL;
 
 
-    setTimeout(function() {
-
-        if (currentBlobURL) {
-
-            gameFrame.src =
-                currentBlobURL;
-
-        }
-
-    }, 50);
+    setTimeout(
+        focusGame,
+        250
+    );
 
 }
 
 
-/* =========================
+/* =====================================================
    FULLSCREEN
-========================= */
+===================================================== */
 
-function fullscreenGame() {
+function fullscreenGame(){
 
-    if (
+    if(
         gameFrame.requestFullscreen
-    ) {
+    ){
 
         gameFrame.requestFullscreen();
 
@@ -891,9 +1164,9 @@ function fullscreenGame() {
     }
 
 
-    if (
+    if(
         gameFrame.webkitRequestFullscreen
-    ) {
+    ){
 
         gameFrame.webkitRequestFullscreen();
 
@@ -902,43 +1175,37 @@ function fullscreenGame() {
 }
 
 
-/* =========================
-   DELETE GAME
-========================= */
+/* =====================================================
+   DELETE
+===================================================== */
 
-function deleteGame(id) {
+function deleteGame(id){
 
     const game =
         games.find(
-            function(g) {
-                return g.id === id;
-            }
+            g => g.id === id
         );
 
 
-    if (!game) {
+    if(!game){
         return;
     }
 
 
-    const confirmed =
-        confirm(
-            'Delete "' +
-            game.name +
-            '"?'
-        );
+    if(
+        !confirm(
+            `Delete "${game.name}"?`
+        )
+    ){
 
-
-    if (!confirmed) {
         return;
+
     }
 
 
     games =
         games.filter(
-            function(g) {
-                return g.id !== id;
-            }
+            g => g.id !== id
         );
 
 
@@ -946,33 +1213,37 @@ function deleteGame(id) {
 
     renderGames();
 
+
+    showToast(
+        "Game deleted."
+    );
+
 }
 
 
-/* =========================
-   SAVE GAMES
-========================= */
+/* =====================================================
+   STORAGE
+===================================================== */
 
-function saveGames() {
+function saveGames(){
 
-    try {
-
-        /*
-           LocalStorage is used so the
-           games stay available on this
-           browser.
-        */
+    try{
 
         localStorage.setItem(
             "htmlArcadeGames",
             JSON.stringify(games)
         );
 
-    } catch(error) {
+    }catch(error){
 
         console.error(
-            "Could not save games:",
+            "Storage error:",
             error
+        );
+
+
+        showToast(
+            "This game is too large to save locally."
         );
 
     }
@@ -980,13 +1251,9 @@ function saveGames() {
 }
 
 
-/* =========================
-   LOAD GAMES
-========================= */
+function loadGames(){
 
-function loadGames() {
-
-    try {
+    try{
 
         const saved =
             localStorage.getItem(
@@ -994,17 +1261,17 @@ function loadGames() {
             );
 
 
-        if (saved) {
+        if(saved){
 
             games =
                 JSON.parse(saved);
 
         }
 
-    } catch(error) {
+    }catch(error){
 
         console.error(
-            "Could not load games:",
+            "Load error:",
             error
         );
 
@@ -1018,44 +1285,164 @@ function loadGames() {
 }
 
 
-/* =========================
-   HOME
-========================= */
+/* =====================================================
+   SEARCH
+===================================================== */
 
-function showHome() {
+search.addEventListener(
+    "input",
+    renderGames
+);
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function goHome(){
 
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 
 }
 
 
-/* =========================
-   LIBRARY
-========================= */
+function goLibrary(){
 
-function showLibrary() {
-
-    window.scrollTo({
-
-        top:
-            document.body.scrollHeight,
-
-        behavior:
-            "smooth"
-
-    });
+    document
+        .querySelector("#games")
+        .scrollIntoView({
+            behavior:"smooth"
+        });
 
 }
 
 
-/* =========================
-   ESCAPE HTML
-========================= */
+/* =====================================================
+   DRAG & DROP
+===================================================== */
 
-function escapeHTML(text) {
+document.addEventListener(
+    "dragenter",
+    event => {
+
+        event.preventDefault();
+
+        dragCounter++;
+
+        dropZone.classList.add(
+            "active"
+        );
+
+    }
+);
+
+
+document.addEventListener(
+    "dragover",
+    event => {
+
+        event.preventDefault();
+
+    }
+);
+
+
+document.addEventListener(
+    "dragleave",
+    event => {
+
+        event.preventDefault();
+
+        dragCounter--;
+
+
+        if(dragCounter <= 0){
+
+            dragCounter = 0;
+
+            dropZone.classList.remove(
+                "active"
+            );
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "drop",
+    event => {
+
+        event.preventDefault();
+
+        dragCounter = 0;
+
+        dropZone.classList.remove(
+            "active"
+        );
+
+
+        const file =
+            event.dataTransfer.files[0];
+
+
+        if(file){
+
+            handleFile(file);
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+let toastTimer;
+
+
+function showToast(message){
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2500
+        );
+
+}
+
+
+/* =====================================================
+   ESCAPE
+===================================================== */
+
+function escapeHTML(text){
 
     const div =
         document.createElement("div");
@@ -1070,113 +1457,9 @@ function escapeHTML(text) {
 }
 
 
-/* =========================
-   DRAG & DROP
-========================= */
-
-let dragCounter = 0;
-
-
-document.addEventListener(
-    "dragenter",
-    function(event) {
-
-        event.preventDefault();
-
-        dragCounter++;
-
-        dropArea.classList.add(
-            "active"
-        );
-
-    }
-);
-
-
-document.addEventListener(
-    "dragover",
-    function(event) {
-
-        event.preventDefault();
-
-    }
-);
-
-
-document.addEventListener(
-    "dragleave",
-    function(event) {
-
-        event.preventDefault();
-
-        dragCounter--;
-
-        if (dragCounter <= 0) {
-
-            dragCounter = 0;
-
-            dropArea.classList.remove(
-                "active"
-            );
-
-        }
-
-    }
-);
-
-
-document.addEventListener(
-    "drop",
-    function(event) {
-
-        event.preventDefault();
-
-        dragCounter = 0;
-
-        dropArea.classList.remove(
-            "active"
-        );
-
-
-        const files =
-            event.dataTransfer.files;
-
-
-        if (!files.length) {
-            return;
-        }
-
-
-        handleFile(files[0]);
-
-    }
-);
-
-
-/* =========================
-   ESC TO CLOSE
-========================= */
-
-document.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (
-            event.key === "Escape" &&
-            player.style.display === "block"
-        ) {
-
-            closeGame();
-
-        }
-
-    }
-);
-
-
-/* =========================
-   INITIALIZE
-========================= */
+/* =====================================================
+   START
+===================================================== */
 
 loadGames();
 
