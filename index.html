@@ -148,10 +148,7 @@ main{max-width:1200px;margin:auto;padding:25px}
 </div>
 
 <script>
-/* =================================================
-   SUPABASE CONNECTION
-   Replace the key with your actual Publishable key.
-   ================================================= */
+/* SUPABASE CONNECTION */
 
 const SUPABASE_URL = "https://qmuuhknmcvsntutnzpap.supabase.co";
 const SUPABASE_KEY = "sb_publishable_K72LZa8QS6SrLy103Gnylg_HxbWiRDx";
@@ -229,7 +226,6 @@ async function ensureProfile() {
         await loadProfile();
     }
 
-    // Only the designated email can claim the Owner role.
     if (currentUser.email?.toLowerCase() === "ambrosewang@westminster.net") {
         const {error} = await supabaseClient.rpc("make_owner");
         if (error) throw error;
@@ -237,7 +233,7 @@ async function ensureProfile() {
     }
 }
 
-/* SIGN UP */
+/* SIGN UP — FIXED */
 
 async function signup() {
     if (authBusy) return;
@@ -253,15 +249,15 @@ async function signup() {
             return;
         }
 
-        const {data: existing, error: checkError} = await supabaseClient
-            .from("profiles")
-            .select("id")
-            .ilike("display_name", name)
-            .maybeSingle();
+        // Check name availability through the secure Supabase function.
+        const {data: available, error: checkError} =
+            await supabaseClient.rpc("is_display_name_available", {
+                requested_name: name
+            });
 
         if (checkError) throw checkError;
 
-        if (existing) {
+        if (!available) {
             authMessage("That display name is already being used.", true);
             return;
         }
@@ -301,8 +297,7 @@ async function signup() {
         authBusy = false;
     }
 }
-
-/* SIGN IN */
+    /* SIGN IN */
 
 async function login() {
     if (authBusy) return;
@@ -508,8 +503,7 @@ async function kickUser(userId) {
     if (!data) alert("You do not have permission to kick this user.");
     await loadUsers();
 }
-
-/* GAMES */
+    /* GAMES */
 
 function handleFiles(fileList) {
     for (const file of Array.from(fileList)) {
