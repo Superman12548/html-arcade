@@ -162,7 +162,7 @@ const supabaseClient = window.supabase.createClient(
 
 let currentUser = null;
 let currentProfile = null;
-let games = JSON.parse(localStorage.getItem("htmlArcadeGames") || "[]");
+let games = [];
 let currentGame = null;
 let currentBlobURL = null;
 let authBusy = false;
@@ -371,10 +371,10 @@ function enterApp() {
     showArcade();
 }
 
-function showArcade() {
+async function showArcade() {
     document.getElementById("arcadePage").classList.remove("hidden");
     document.getElementById("accountPage").classList.add("hidden");
-    renderGames();
+    await loadGames();
 }
 
 async function showAccount() {
@@ -503,39 +503,105 @@ async function kickUser(userId) {
     if (!data) alert("You do not have permission to kick this user.");
     await loadUsers();
 }
-/* GAMES */
+/* GAMES — SUPABASE STORAGE + DATABASE */
 
-function handleFiles(fileList) {
-    for (const file of Array.from(fileList)) {
-        if (!/\.(html|htm)$/i.test(file.name)) continue;
+async function loadGames() {
+    const grid = document.getElementById("gamesGrid");
+    grid.innerHTML = "<div class='empty'>Loading games...</div>";
 
-        const reader = new FileReader();
+    const {data, error} = await supabaseClient
+        .from("games")
+        .select("*")
+        .order("created_at", {ascending:false});
 
-        reader.onload = () => {
-            games.push({
-                id: crypto.randomUUID(),
-                name: file.name.replace(/\.(html|htm)$/i,""),
-                filename: file.name,
-                source: reader.result
-            });
-
-            saveGames();
-            renderGames();
-        };
-
-        reader.readAsText(file);
+    if (error) {
+        grid.innerHTML = `<div class="empty">${escapeHTML(error.message)}</div>`;
+        return;
     }
+
+    games = (data || []).map(game => ({
+        ...game,
+        id: game.id,
+        name: game.name,
+        filename: game.filename,
+        storagePath: game.storage_path,
+        ownerId: game.owner_id
+    }));
+
+    renderGames();
 }
 
-function saveGames() {
-    localStorage.setItem("htmlArcadeGames", JSON.stringify(games));
+async function handleFiles(fileList) {
+    if (!currentUser) {
+        alert("Please sign in first.");
+        return;
+    }
+
+    const files = Array.from(fileList || []);
+    const htmlFiles = files.filter(file => /\.(html|htm)$/i.test(file.name));
+
+    if (!htmlFiles.length) {
+        alert("Please upload HTML or HTM files.");
+        return;
+    }
+
+    const dropZone = document.getElementById("dropZone");
+    const oldText = dropZone.textContent;
+
+    for (const file of htmlFiles) {
+        const id = crypto.randomUUID();
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const storagePath = `${currentUser.id}/${id}-${safeName}`;
+
+        dropZone.textContent = `Uploading ${file.name}...`;
+
+        try {
+            const {error: uploadError} = await supabaseClient.storage
+                .from("games")
+                .upload(storagePath, file, {
+                    contentType: "text/html",
+                    upsert: false
+                });
+
+            if (uploadError) throw uploadError;
+
+            const {data: publicData} = supabaseClient.storage
+                .from("games")
+                .getPublicUrl(storagePath);
+
+            const {error: dbError} = await supabaseClient
+                .from("games")
+                .insert({
+                    id,
+                    owner_id: currentUser.id,
+                    name: file.name.replace(/\.(html|htm)$/i, ""),
+                    filename: file.name,
+                    storage_path: storagePath,
+                    public_url: publicData.publicUrl
+                });
+
+            if (dbError) {
+                await supabaseClient.storage.from("games").remove([storagePath]);
+                throw dbError;
+            }
+        } catch (error) {
+            alert(`Could not upload "${file.name}": ${error.message}`);
+        }
+    }
+
+    dropZone.textContent = oldText;
+    await loadGames();
 }
 
 function renderGames() {
     const grid = document.getElementById("gamesGrid");
     const query = document.getElementById("search").value.toLowerCase().trim();
 
-    const filtered = games.filter(game => game.name.toLowerCase().includes(query));
+    const filtered = games.filter(game =>
+        game.name.toLowerCase().includes(query) ||
+        game.filename.toLowerCase().includes(query)
+    );
+
     grid.innerHTML = "";
 
     if (!filtered.length) {
@@ -544,21 +610,46 @@ function renderGames() {
     }
 
     for (const game of filtered) {
+        const canDelete =
+            game.ownerId === currentUser.id ||
+            ["owner","admin"].includes(currentProfile?.role);
+
         const card = document.createElement("div");
         card.className = "gameCard";
-        card.innerHTML = `
-            <div class="gameTitle">${escapeHTML(game.name)}</div>
-            <div class="gameInfo">${escapeHTML(game.filename)}</div>
-            <div class="gameActions">
-                <button onclick="openGame('${game.id}')">▶ Play</button>
-                <button class="danger" onclick="deleteGame('${game.id}')">Delete</button>
-            </div>
-        `;
+
+        const title = document.createElement("div");
+        title.className = "gameTitle";
+        title.textContent = game.name;
+
+        const info = document.createElement("div");
+        info.className = "gameInfo";
+        info.textContent = game.filename;
+
+        const actions = document.createElement("div");
+        actions.className = "gameActions";
+
+        const playButton = document.createElement("button");
+        playButton.textContent = "▶ Play";
+        playButton.onclick = () => openGame(game.id);
+
+        actions.appendChild(playButton);
+
+        if (canDelete) {
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "danger";
+            deleteButton.textContent = "Delete";
+            deleteButton.onclick = () => deleteGame(game.id);
+            actions.appendChild(deleteButton);
+        }
+
+        card.appendChild(title);
+        card.appendChild(info);
+        card.appendChild(actions);
         grid.appendChild(card);
     }
 }
 
-function openGame(id) {
+async function openGame(id) {
     const game = games.find(item => item.id === id);
     if (!game) return;
 
@@ -566,16 +657,26 @@ function openGame(id) {
 
     if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
 
-    currentBlobURL = URL.createObjectURL(
-        new Blob([game.source], {type:"text/html"})
-    );
+    // Fetch the saved HTML and create a local URL for the iframe.
+    try {
+        const response = await fetch(game.public_url, {cache:"no-store"});
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    document.getElementById("playerTitle").textContent = game.name;
-    document.getElementById("gameFrame").src = currentBlobURL;
-    document.getElementById("playerPage").classList.remove("hidden");
-    document.body.style.overflow = "hidden";
+        const source = await response.text();
 
-    setTimeout(focusGame, 300);
+        currentBlobURL = URL.createObjectURL(
+            new Blob([source], {type:"text/html"})
+        );
+
+        document.getElementById("playerTitle").textContent = game.name;
+        document.getElementById("gameFrame").src = currentBlobURL;
+        document.getElementById("playerPage").classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+
+        setTimeout(focusGame, 300);
+    } catch (error) {
+        alert(`Could not open this game: ${error.message}`);
+    }
 }
 
 function focusGame() {
@@ -594,10 +695,9 @@ function closeGame() {
     currentGame = null;
 }
 
-function reloadGame() {
+async function reloadGame() {
     if (!currentGame) return;
-    document.getElementById("gameFrame").src = currentBlobURL;
-    setTimeout(focusGame, 300);
+    await openGame(currentGame.id);
 }
 
 async function fullscreenGame() {
@@ -609,13 +709,37 @@ async function fullscreenGame() {
     }
 }
 
-function deleteGame(id) {
+async function deleteGame(id) {
     const game = games.find(item => item.id === id);
     if (!game || !confirm(`Delete "${game.name}"?`)) return;
 
-    games = games.filter(item => item.id !== id);
-    saveGames();
-    renderGames();
+    const canDelete =
+        game.ownerId === currentUser.id ||
+        ["owner","admin"].includes(currentProfile?.role);
+
+    if (!canDelete) {
+        alert("You do not have permission to delete this game.");
+        return;
+    }
+
+    try {
+        const {error: storageError} = await supabaseClient.storage
+            .from("games")
+            .remove([game.storagePath]);
+
+        if (storageError) throw storageError;
+
+        const {error: dbError} = await supabaseClient
+            .from("games")
+            .delete()
+            .eq("id", game.id);
+
+        if (dbError) throw dbError;
+
+        await loadGames();
+    } catch (error) {
+        alert(`Could not delete the game: ${error.message}`);
+    }
 }
 
 /* DRAG AND DROP */
