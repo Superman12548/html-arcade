@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Arcade</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0f17;color:white;font-family:Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+input{padding:12px;background:#0e131d;border:1px solid #303a4d;border-radius:9px;color:white;width:100%;margin:7px 0}
+button{padding:10px 14px;border:0;border-radius:9px;background:#6573ff;color:white;font-weight:bold}
+.secondary{background:#202a3b;border:1px solid #39445a}
+.danger{background:#d64c5c}
+.primary{width:100%;margin-top:10px}
+#authPage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.authBox{width:min(430px,100%);background:#151b27;border:1px solid #293244;border-radius:18px;padding:30px}
+.logo{font-size:30px;font-weight:800;margin-bottom:8px}
+.subtitle,.muted{color:#929eb0}
+.error{color:#ff7777;margin-top:12px}
+.success{color:#62d98b;margin-top:12px}
+header{position:sticky;top:0;z-index:10;background:#101621;border-bottom:1px solid #293244;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.headerLogo{font-size:22px;font-weight:bold}
+.headerRight{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.userBadge{background:#202a3b;padding:9px;border-radius:9px}
+.roleBadge{font-size:11px;background:#39445a;padding:4px 8px;border-radius:20px}
+.ownerBadge{background:#8958d8}
+.adminBadge{background:#426bd0}
+main{max-width:1200px;margin:auto;padding:25px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.search{flex:1;min-width:200px}
+.gamesGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:15px}
+.gameCard,.panel{background:#151b27;border:1px solid #293244;border-radius:14px;padding:17px}
+.gameTitle{font-size:18px;font-weight:bold;overflow-wrap:anywhere}
+.gameInfo{color:#8995a8;font-size:13px;margin:9px 0 15px}
+.gameActions{display:flex;gap:8px}
+.gameActions button{flex:1}
+.dropZone{border:2px dashed #39445a;border-radius:14px;padding:30px;text-align:center;color:#8995a8;margin-bottom:20px}
+.dropZone.dragging{border-color:#6573ff;background:#151c2a}
+.profileRow{display:flex;gap:10px;align-items:center}
+.profileRow input{flex:1}
+.usersTable{width:100%;border-collapse:collapse;min-width:600px}
+.usersTable td,.usersTable th{text-align:left;padding:12px 8px;border-bottom:1px solid #293244}
+.usersTable th{color:#8995a8}
+#playerPage{position:fixed;inset:0;z-index:100;background:#05070b;display:flex;flex-direction:column}
+.playerBar{min-height:55px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#101621}
+.playerButtons{display:flex;gap:7px;flex-wrap:wrap}
+#gameFrame{flex:1;width:100%;border:0;background:black}
+.empty{text-align:center;color:#8995a8;padding:40px}
+@media(max-width:650px){.profileRow{flex-direction:column}.playerBar{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+
+<body>
+
+<div id="authPage">
+<div class="authBox">
+    <div class="logo">🎮 HTML Arcade</div>
+    <p class="subtitle">Play your HTML games anywhere.</p>
+
+    <div id="loginForm">
+        <input id="loginEmail" type="email" placeholder="Email">
+        <input id="loginPassword" type="password" placeholder="Password">
+        <button class="primary" onclick="login()">Sign In</button>
+        <button class="secondary primary" onclick="showSignup()">Create Account</button>
+    </div>
+
+    <div id="signupForm" class="hidden">
+        <input id="signupName" maxlength="30" placeholder="Preference / display name">
+        <input id="signupEmail" type="email" placeholder="Email">
+        <input id="signupPassword" type="password" placeholder="Password">
+        <button class="primary" onclick="signup()">Create Account</button>
+        <button class="secondary primary" onclick="showLogin()">Back to Sign In</button>
+    </div>
+
+    <div id="authMessage"></div>
+</div>
+</div>
+
+<div id="app" class="hidden">
+<header>
+    <div class="headerLogo">🎮 HTML Arcade</div>
+    <div class="headerRight">
+        <div class="userBadge">
+            <span id="headerName">User</span>
+            <span id="headerRole" class="roleBadge">Member</span>
+        </div>
+        <button class="secondary" onclick="showArcade()">Arcade</button>
+        <button class="secondary" onclick="showAccount()">Account</button>
+        <button class="secondary" onclick="logout()">Sign Out</button>
+    </div>
+</header>
+
+<main>
+<section id="arcadePage">
+    <div class="toolbar">
+        <input id="search" class="search" placeholder="Search games..." oninput="renderGames()">
+        <button onclick="document.getElementById('fileInput').click()">+ Add HTML Game</button>
+        <input id="fileInput" type="file" accept=".html,.htm" multiple class="hidden" onchange="handleFiles(this.files)">
+    </div>
+    <div id="dropZone" class="dropZone">Drag and drop HTML games here</div>
+    <div id="gamesGrid" class="gamesGrid"></div>
+</section>
+
+<section id="accountPage" class="hidden">
+    <div class="panel">
+        <h2>👤 Account</h2>
+        <p class="muted">Your display name must be unique.</p>
+        <div class="profileRow">
+            <input id="newDisplayName" maxlength="30" placeholder="Display name">
+            <button onclick="changeDisplayName()">Save</button>
+        </div>
+        <div id="profileMessage"></div>
+    </div>
+
+    <div id="adminPanel" class="panel hidden">
+        <h2>🛡️ User Management</h2>
+        <p class="muted">Owners can manage admins and members. Admins can manage members.</p>
+        <div style="overflow-x:auto">
+            <table class="usersTable">
+                <thead>
+                    <tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="usersList"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</main>
+</div>
+
+<div id="playerPage" class="hidden">
+    <div class="playerBar">
+        <strong id="playerTitle">Game</strong>
+        <div class="playerButtons">
+            <button class="secondary" onclick="reloadGame()">🔄 Reload</button>
+            <button class="secondary" onclick="fullscreenGame()">⛶ Fullscreen</button>
+            <button class="danger" onclick="closeGame()">✕ Close</button>
+        </div>
+    </div>
+    <iframe id="gameFrame" title="HTML Game"
+        allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write"
+        allowfullscreen></iframe>
+</div>
+
+<script>
+/* SUPABASE CONNECTION */
+
+const SUPABASE_URL = "https://qmuuhknmcvsntutnzpap.supabase.co";
+const SUPABASE_KEY = "sb_publishable_K72LZa8QS6SrLy103Gnylg_HxbWiRDx";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+/* STATE */
+
+let currentUser = null;
+let currentProfile = null;
+let games = JSON.parse(localStorage.getItem("htmlArcadeGames") || "[]");
+let currentGame = null;
+let currentBlobURL = null;
+let authBusy = false;
+
+/* AUTH MESSAGES */
+
+function authMessage(message, error=false) {
+    const el = document.getElementById("authMessage");
+    el.className = error ? "error" : "success";
+    el.textContent = message;
+}
+
+function profileMessage(message, error=false) {
+    const el = document.getElementById("profileMessage");
+    el.className = error ? "error" : "success";
+    el.textContent = message;
+}
+
+function showSignup() {
+    document.getElementById("loginForm").classList.add("hidden");
+    document.getElementById("signupForm").classList.remove("hidden");
+    authMessage("");
+}
+
+function showLogin() {
+    document.getElementById("signupForm").classList.add("hidden");
+    document.getElementById("loginForm").classList.remove("hidden");
+    authMessage("");
+}
+
+/* PROFILE */
+
+async function loadProfile() {
+    const {data, error} = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+    if (error) throw error;
+    currentProfile = data;
+}
+
+async function ensureProfile() {
+    await loadProfile();
+
+    if (!currentProfile) {
+        const name = currentUser.email.split("@")[0].slice(0,30);
+
+        const {error} = await supabaseClient
+            .from("profiles")
+            .insert({
+                id: currentUser.id,
+                display_name: name,
+                role: "member",
+                kicked: false
+            });
+
+        if (error && error.code !== "23505") throw error;
+
+        await loadProfile();
+    }
+
+    if (currentUser.email?.toLowerCase() === "ambrosewang@westminster.net") {
+        const {error} = await supabaseClient.rpc("make_owner");
+        if (error) throw error;
+        await loadProfile();
+    }
+}
+
+/* SIGN UP — FIXED */
+
+async function signup() {
+    if (authBusy) return;
+    authBusy = true;
+
+    try {
+        const name = document.getElementById("signupName").value.trim();
+        const email = document.getElementById("signupEmail").value.trim();
+        const password = document.getElementById("signupPassword").value;
+
+        if (name.length < 2 || name.length > 30 || !email || password.length < 6) {
+            authMessage("Enter a display name (2–30 characters), email, and password (at least 6 characters).", true);
+            return;
+        }
+
+        // Check name availability through the secure Supabase function.
+        const {data: available, error: checkError} =
+            await supabaseClient.rpc("is_display_name_available", {
+                requested_name: name
+            });
+
+        if (checkError) throw checkError;
+
+        if (!available) {
+            authMessage("That display name is already being used.", true);
+            return;
+        }
+
+        const {data, error} = await supabaseClient.auth.signUp({
+            email,
+            password
+        });
+
+        if (error) throw error;
+
+        if (!data.session) {
+            authMessage("Account created. Check your email to verify it, then sign in.", false);
+            showLogin();
+            return;
+        }
+
+        currentUser = data.user;
+
+        const {error: insertError} = await supabaseClient
+            .from("profiles")
+            .insert({
+                id: currentUser.id,
+                display_name: name,
+                role: "member",
+                kicked: false
+            });
+
+        if (insertError) throw insertError;
+
+        await ensureProfile();
+        enterApp();
+
+    } catch (error) {
+        authMessage(error.message || "Account creation failed.", true);
+    } finally {
+        authBusy = false;
+    }
+}
+/* SIGN IN */
+
+async function login() {
+    if (authBusy) return;
+    authBusy = true;
+
+    try {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+
+        if (!email || !password) {
+            authMessage("Enter your email and password.", true);
+            return;
+        }
+
+        const {data, error} = await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) throw error;
+
+        currentUser = data.user;
+        await ensureProfile();
+
+        if (currentProfile?.kicked) {
+            await supabaseClient.auth.signOut();
+            currentUser = null;
+            currentProfile = null;
+            authMessage("This account has been kicked from HTML Arcade.", true);
+            return;
+        }
+
+        enterApp();
+
+    } catch (error) {
+        authMessage(error.message || "Sign in failed.", true);
+    } finally {
+        authBusy = false;
+    }
+}
+
+async function logout() {
+    await supabaseClient.auth.signOut();
+    currentUser = null;
+    currentProfile = null;
+    document.getElementById("app").classList.add("hidden");
+    document.getElementById("authPage").classList.remove("hidden");
+    closeGame();
+}
+
+/* APP */
+
+function enterApp() {
+    if (!currentProfile || currentProfile.kicked) {
+        authMessage("Your account cannot access HTML Arcade.", true);
+        return;
+    }
+
+    document.getElementById("authPage").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+
+    document.getElementById("headerName").textContent =
+        currentProfile.display_name || currentUser.email;
+
+    const role = document.getElementById("headerRole");
+    role.textContent = capitalize(currentProfile.role);
+    role.className = "roleBadge " +
+        (currentProfile.role === "owner" ? "ownerBadge" :
+        currentProfile.role === "admin" ? "adminBadge" : "");
+
+    showArcade();
+}
+
+function showArcade() {
+    document.getElementById("arcadePage").classList.remove("hidden");
+    document.getElementById("accountPage").classList.add("hidden");
+    renderGames();
+}
+
+async function showAccount() {
+    document.getElementById("arcadePage").classList.add("hidden");
+    document.getElementById("accountPage").classList.remove("hidden");
+    document.getElementById("newDisplayName").value = currentProfile.display_name || "";
+
+    const isManager = ["owner","admin"].includes(currentProfile.role);
+    document.getElementById("adminPanel").classList.toggle("hidden", !isManager);
+
+    if (isManager) await loadUsers();
+}
+
+/* DISPLAY NAME */
+
+async function changeDisplayName() {
+    const name = document.getElementById("newDisplayName").value.trim();
+
+    if (name.length < 2 || name.length > 30) {
+        profileMessage("Name must be between 2 and 30 characters.", true);
+        return;
+    }
+
+    const {data, error} = await supabaseClient.rpc("update_display_name", {
+        new_name: name
+    });
+
+    if (error) {
+        profileMessage(error.message, true);
+        return;
+    }
+
+    if (!data) {
+        profileMessage("Could not update your display name.", true);
+        return;
+    }
+
+    await loadProfile();
+    enterApp();
+    profileMessage("Display name updated!");
+}
+
+/* USER MANAGEMENT */
+
+async function loadUsers() {
+    const tbody = document.getElementById("usersList");
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+    const {data, error} = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .order("created_at", {ascending:true});
+
+    if (error) {
+        tbody.innerHTML = `<tr><td colspan="4">${escapeHTML(error.message)}</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    for (const user of data || []) {
+        const tr = document.createElement("tr");
+        const self = user.id === currentUser.id;
+        let actions = "";
+
+        if (user.role === "owner" || self) {
+            actions = "<span class='muted'>Protected</span>";
+        } else if (canManageUser(user)) {
+            actions = `
+                <select onchange="changeRole('${user.id}',this.value)">
+                    <option value="member" ${user.role==="member"?"selected":""}>Member</option>
+                    ${currentProfile.role==="owner" ?
+                    `<option value="admin" ${user.role==="admin"?"selected":""}>Admin</option>` : ""}
+                </select>
+                <button class="danger" onclick="kickUser('${user.id}')">Kick</button>
+            `;
+        } else {
+            actions = "<span class='muted'>Protected</span>";
+        }
+
+        tr.innerHTML = `
+            <td>${escapeHTML(user.display_name || "Unnamed")}</td>
+            <td>${self ? escapeHTML(currentUser.email) : "Hidden"}</td>
+            <td>${escapeHTML(capitalize(user.role))}${user.kicked ? " (Kicked)" : ""}</td>
+            <td>${actions}</td>
+        `;
+
+        tbody.appendChild(tr);
+    }
+}
+
+function canManageUser(user) {
+    if (user.id === currentUser.id || user.role === "owner") return false;
+    if (currentProfile.role === "owner") return true;
+    return currentProfile.role === "admin" && user.role === "member";
+}
+
+async function changeRole(userId, newRole) {
+    const {data, error} = await supabaseClient.rpc("set_user_role", {
+        target_user: userId,
+        new_role: newRole
+    });
+
+    if (error) {
+        alert(error.message);
+        await loadUsers();
+        return;
+    }
+
+    if (!data) alert("You do not have permission to change this role.");
+    await loadUsers();
+}
+
+async function kickUser(userId) {
+    if (!confirm("Are you sure you want to kick this user?")) return;
+
+    const {data, error} = await supabaseClient.rpc("kick_user", {
+        target_user: userId
+    });
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    if (!data) alert("You do not have permission to kick this user.");
+    await loadUsers();
+}
+/* GAMES */
+
+function handleFiles(fileList) {
+    for (const file of Array.from(fileList)) {
+        if (!/\.(html|htm)$/i.test(file.name)) continue;
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            games.push({
+                id: crypto.randomUUID(),
+                name: file.name.replace(/\.(html|htm)$/i,""),
+                filename: file.name,
+                source: reader.result
+            });
+
+            saveGames();
+            renderGames();
+        };
+
+        reader.readAsText(file);
+    }
+}
+
+function saveGames() {
+    localStorage.setItem("htmlArcadeGames", JSON.stringify(games));
+}
+
+function renderGames() {
+    const grid = document.getElementById("gamesGrid");
+    const query = document.getElementById("search").value.toLowerCase().trim();
+
+    const filtered = games.filter(game => game.name.toLowerCase().includes(query));
+    grid.innerHTML = "";
+
+    if (!filtered.length) {
+        grid.innerHTML = "<div class='empty'>No games found. Add an HTML game to get started!</div>";
+        return;
+    }
+
+    for (const game of filtered) {
+        const card = document.createElement("div");
+        card.className = "gameCard";
+        card.innerHTML = `
+            <div class="gameTitle">${escapeHTML(game.name)}</div>
+            <div class="gameInfo">${escapeHTML(game.filename)}</div>
+            <div class="gameActions">
+                <button onclick="openGame('${game.id}')">▶ Play</button>
+                <button class="danger" onclick="deleteGame('${game.id}')">Delete</button>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
+}
+
+function openGame(id) {
+    const game = games.find(item => item.id === id);
+    if (!game) return;
+
+    currentGame = game;
+
+    if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
+
+    currentBlobURL = URL.createObjectURL(
+        new Blob([game.source], {type:"text/html"})
+    );
+
+    document.getElementById("playerTitle").textContent = game.name;
+    document.getElementById("gameFrame").src = currentBlobURL;
+    document.getElementById("playerPage").classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    setTimeout(focusGame, 300);
+}
+
+function focusGame() {
+    document.getElementById("gameFrame").focus();
+}
+
+function closeGame() {
+    const frame = document.getElementById("gameFrame");
+    frame.src = "about:blank";
+    document.getElementById("playerPage").classList.add("hidden");
+    document.body.style.overflow = "";
+
+    if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
+
+    currentBlobURL = null;
+    currentGame = null;
+}
+
+function reloadGame() {
+    if (!currentGame) return;
+    document.getElementById("gameFrame").src = currentBlobURL;
+    setTimeout(focusGame, 300);
+}
+
+async function fullscreenGame() {
+    const frame = document.getElementById("gameFrame");
+    try {
+        if (frame.requestFullscreen) await frame.requestFullscreen();
+    } catch (error) {
+        alert("Fullscreen could not be opened.");
+    }
+}
+
+function deleteGame(id) {
+    const game = games.find(item => item.id === id);
+    if (!game || !confirm(`Delete "${game.name}"?`)) return;
+
+    games = games.filter(item => item.id !== id);
+    saveGames();
+    renderGames();
+}
+
+/* DRAG AND DROP */
+
+const dropZone = document.getElementById("dropZone");
+
+dropZone.addEventListener("dragover", event => {
+    event.preventDefault();
+    dropZone.classList.add("dragging");
+});
+
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("dragging");
+});
+
+dropZone.addEventListener("drop", event => {
+    event.preventDefault();
+    dropZone.classList.remove("dragging");
+    handleFiles(event.dataTransfer.files);
+});
+
+/* KEYBOARD */
+
+document.getElementById("gameFrame").addEventListener("load", focusGame);
+document.getElementById("gameFrame").addEventListener("click", focusGame);
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" &&
+        !document.getElementById("playerPage").classList.contains("hidden")) {
+        closeGame();
+    }
+});
+
+/* HELPERS */
+
+function capitalize(value) {
+    return value ? value.charAt(0).toUpperCase() + value.slice(1) : "";
+}
+
+function escapeHTML(value) {
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+/* STARTUP */
+
+async function startup() {
+    try {
+        const {data, error} = await supabaseClient.auth.getSession();
+        if (error) throw error;
+
+        if (!data.session) return;
+
+        currentUser = data.session.user;
+        await ensureProfile();
+
+        if (currentProfile?.kicked) {
+            await supabaseClient.auth.signOut();
+            currentUser = null;
+            currentProfile = null;
+            authMessage("This account has been kicked from HTML Arcade.", true);
+            return;
+        }
+
+        enterApp();
+    } catch (error) {
+        authMessage(error.message || "Could not connect to Supabase.", true);
+    }
+}
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
+        currentUser = null;
+        currentProfile = null;
+        document.getElementById("app").classList.add("hidden");
+        document.getElementById("authPage").classList.remove("hidden");
+    }
+});
+
+startup();
+</script>
+</body>
+</html>
