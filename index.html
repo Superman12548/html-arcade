@@ -503,7 +503,9 @@ async function kickUser(userId) {
     if (!data) alert("You do not have permission to kick this user.");
     await loadUsers();
 }
-/* GAMES — SUPABASE STORAGE + DATABASE */
+/* GAMES — SUPABASE STORAGE WITH LARGE-FILE CHUNKING */
+
+const GAME_CHUNK_SIZE = 8 * 1024 * 1024;
 
 async function loadGames() {
     const grid = document.getElementById("gamesGrid");
@@ -521,10 +523,6 @@ async function loadGames() {
 
     games = (data || []).map(game => ({
         ...game,
-        id: game.id,
-        name: game.name,
-        filename: game.filename,
-        storagePath: game.storage_path,
         ownerId: game.owner_id
     }));
 
@@ -537,60 +535,101 @@ async function handleFiles(fileList) {
         return;
     }
 
-    const files = Array.from(fileList || []);
-    const htmlFiles = files.filter(file => /\.(html|htm)$/i.test(file.name));
+    const files = Array.from(fileList || [])
+        .filter(file => /\.(html|htm)$/i.test(file.name));
 
-    if (!htmlFiles.length) {
-        alert("Please upload HTML or HTM files.");
+    if (!files.length) {
+        alert("Please select an HTML or HTM file.");
         return;
     }
 
     const dropZone = document.getElementById("dropZone");
     const oldText = dropZone.textContent;
 
-    for (const file of htmlFiles) {
-        const id = crypto.randomUUID();
+    for (const file of files) {
+        const gameId = crypto.randomUUID();
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const storagePath = `${currentUser.id}/${id}-${safeName}`;
-
-        dropZone.textContent = `Uploading ${file.name}...`;
+        const totalChunks = Math.ceil(file.size / GAME_CHUNK_SIZE);
 
         try {
-            const {error: uploadError} = await supabaseClient.storage
-                .from("games")
-                .upload(storagePath, file, {
-                    contentType: "text/html",
-                    upsert: false
-                });
-
-            if (uploadError) throw uploadError;
-
-            const {data: publicData} = supabaseClient.storage
-                .from("games")
-                .getPublicUrl(storagePath);
+            dropZone.textContent =
+                `Preparing ${file.name} — ${formatBytes(file.size)}`;
 
             const {error: dbError} = await supabaseClient
                 .from("games")
                 .insert({
-                    id,
+                    id: gameId,
                     owner_id: currentUser.id,
                     name: file.name.replace(/\.(html|htm)$/i, ""),
                     filename: file.name,
-                    storage_path: storagePath,
-                    public_url: publicData.publicUrl
+                    storage_path: `${currentUser.id}/${gameId}`,
+                    public_url: ""
                 });
 
-            if (dbError) {
-                await supabaseClient.storage.from("games").remove([storagePath]);
-                throw dbError;
+            if (dbError) throw dbError;
+
+            for (let index = 0; index < totalChunks; index++) {
+                const startByte = index * GAME_CHUNK_SIZE;
+                const endByte = Math.min(
+                    startByte + GAME_CHUNK_SIZE,
+                    file.size
+                );
+
+                const chunk = file.slice(startByte, endByte);
+                const chunkPath =
+                    `${currentUser.id}/${gameId}/chunk-${String(index).padStart(5, "0")}`;
+
+                dropZone.textContent =
+                    `Uploading ${file.name}: ${index + 1}/${totalChunks} ` +
+                    `(${Math.round((endByte / file.size) * 100)}%)`;
+
+                const {error: uploadError} = await supabaseClient.storage
+                    .from("games")
+                    .upload(chunkPath, chunk, {
+                        contentType: "application/octet-stream",
+                        upsert: false
+                    });
+
+                if (uploadError) throw uploadError;
+
+                const {error: chunkDbError} = await supabaseClient
+                    .from("game_chunks")
+                    .insert({
+                        game_id: gameId,
+                        chunk_index: index,
+                        storage_path: chunkPath
+                    });
+
+                if (chunkDbError) throw chunkDbError;
             }
+
+            dropZone.textContent = `Uploaded ${file.name}!`;
+
         } catch (error) {
+            await cleanupGame(gameId);
             alert(`Could not upload "${file.name}": ${error.message}`);
         }
     }
 
     dropZone.textContent = oldText;
+    document.getElementById("fileInput").value = "";
     await loadGames();
+}
+
+async function cleanupGame(gameId) {
+    const {data: chunks} = await supabaseClient
+        .from("game_chunks")
+        .select("storage_path")
+        .eq("game_id", gameId);
+
+    const paths = (chunks || []).map(chunk => chunk.storage_path);
+
+    if (paths.length) {
+        await supabaseClient.storage.from("games").remove(paths);
+    }
+
+    await supabaseClient.from("game_chunks").delete().eq("game_id", gameId);
+    await supabaseClient.from("games").delete().eq("id", gameId);
 }
 
 function renderGames() {
@@ -605,15 +644,12 @@ function renderGames() {
     grid.innerHTML = "";
 
     if (!filtered.length) {
-        grid.innerHTML = "<div class='empty'>No games found. Add an HTML game to get started!</div>";
+        grid.innerHTML =
+            "<div class='empty'>No games found. Add an HTML game to get started!</div>";
         return;
     }
 
     for (const game of filtered) {
-        const canDelete =
-            game.ownerId === currentUser.id ||
-            ["owner","admin"].includes(currentProfile?.role);
-
         const card = document.createElement("div");
         card.className = "gameCard";
 
@@ -628,18 +664,21 @@ function renderGames() {
         const actions = document.createElement("div");
         actions.className = "gameActions";
 
-        const playButton = document.createElement("button");
-        playButton.textContent = "▶ Play";
-        playButton.onclick = () => openGame(game.id);
+        const play = document.createElement("button");
+        play.textContent = "▶ Play";
+        play.onclick = () => openGame(game.id);
+        actions.appendChild(play);
 
-        actions.appendChild(playButton);
+        const canDelete =
+            game.ownerId === currentUser.id ||
+            ["owner", "admin"].includes(currentProfile?.role);
 
         if (canDelete) {
-            const deleteButton = document.createElement("button");
-            deleteButton.className = "danger";
-            deleteButton.textContent = "Delete";
-            deleteButton.onclick = () => deleteGame(game.id);
-            actions.appendChild(deleteButton);
+            const del = document.createElement("button");
+            del.className = "danger";
+            del.textContent = "Delete";
+            del.onclick = () => deleteGame(game.id);
+            actions.appendChild(del);
         }
 
         card.appendChild(title);
@@ -655,17 +694,32 @@ async function openGame(id) {
 
     currentGame = game;
 
-    if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
-
-    // Fetch the saved HTML and create a local URL for the iframe.
     try {
-        const response = await fetch(game.public_url, {cache:"no-store"});
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const {data: chunks, error} = await supabaseClient
+            .from("game_chunks")
+            .select("chunk_index, storage_path")
+            .eq("game_id", game.id)
+            .order("chunk_index", {ascending:true});
 
-        const source = await response.text();
+        if (error) throw error;
+        if (!chunks?.length) throw new Error("No uploaded game data was found.");
+
+        const parts = [];
+
+        for (const chunk of chunks) {
+            const {data, error: downloadError} =
+                await supabaseClient.storage
+                    .from("games")
+                    .download(chunk.storage_path);
+
+            if (downloadError) throw downloadError;
+            parts.push(data);
+        }
+
+        if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
 
         currentBlobURL = URL.createObjectURL(
-            new Blob([source], {type:"text/html"})
+            new Blob(parts, {type:"text/html"})
         );
 
         document.getElementById("playerTitle").textContent = game.name;
@@ -674,8 +728,9 @@ async function openGame(id) {
         document.body.style.overflow = "hidden";
 
         setTimeout(focusGame, 300);
+
     } catch (error) {
-        alert(`Could not open this game: ${error.message}`);
+        alert(`Could not open "${game.name}": ${error.message}`);
     }
 }
 
@@ -704,7 +759,7 @@ async function fullscreenGame() {
     const frame = document.getElementById("gameFrame");
     try {
         if (frame.requestFullscreen) await frame.requestFullscreen();
-    } catch (error) {
+    } catch (_) {
         alert("Fullscreen could not be opened.");
     }
 }
@@ -715,7 +770,7 @@ async function deleteGame(id) {
 
     const canDelete =
         game.ownerId === currentUser.id ||
-        ["owner","admin"].includes(currentProfile?.role);
+        ["owner", "admin"].includes(currentProfile?.role);
 
     if (!canDelete) {
         alert("You do not have permission to delete this game.");
@@ -723,23 +778,22 @@ async function deleteGame(id) {
     }
 
     try {
-        const {error: storageError} = await supabaseClient.storage
-            .from("games")
-            .remove([game.storagePath]);
-
-        if (storageError) throw storageError;
-
-        const {error: dbError} = await supabaseClient
-            .from("games")
-            .delete()
-            .eq("id", game.id);
-
-        if (dbError) throw dbError;
-
+        await cleanupGame(id);
         await loadGames();
+
+        if (currentGame?.id === id) closeGame();
+
     } catch (error) {
-        alert(`Could not delete the game: ${error.message}`);
+        alert(`Could not delete "${game.name}": ${error.message}`);
     }
+}
+
+function formatBytes(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024 * 1024)
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
 /* DRAG AND DROP */
